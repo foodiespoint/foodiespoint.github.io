@@ -8,12 +8,9 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- Monetag Verification Meta Tag (If needed) -->
-  <meta name="monetag" content="xyz123">
-
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=17">
+  <link rel="manifest" href="/manifest.json?v=18">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -717,9 +714,7 @@
 </head>
 <body>
 
-  <!-- ========================================== -->
-  <!-- MONETAG IN-PAGE PUSH SCRIPT (ADDED FOR V17)-->
-  <!-- ========================================== -->
+  <!-- MONETAG SCRIPT INJECTED AT TOP OF BODY -->
   <script>(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
   <!-- ====================================================================== -->
@@ -755,7 +750,7 @@
 
       <div class="header-right-group">
         <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-        <span id="kitchen-version-badge">v17-Beta</span>
+        <span id="kitchen-version-badge">v18-Beta</span>
         <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
       </div>
     </header>
@@ -771,7 +766,7 @@
         <div class="customer-checkout-bar">
           <button class="btn-place-order" id="btn-place-order" onclick="openOrderOptionsModal()">Place Order</button>
           
-          <!-- Monetag Ad Banner Placeholder (Optional) -->
+          <!-- AD CATCHER TARGET DIV -->
           <div id="monetag-banner-container" class="ad-banner-container"></div>
         </div>
       </div>
@@ -974,7 +969,6 @@
     </div>
   </div>
 
-  <!-- Force fetching v17 of the script -->
-  <script src="/app.js?v=17"></script>
+  <script src="/app.js?v=18"></script>
 </body>
 </html>
