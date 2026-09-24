@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v17 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v18 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v17";
+const CURRENT_APP_VERSION = "v18";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -344,7 +344,7 @@ async function notifyKitchenNewOrder(orderData) {
 }
 
 // ==========================================================================
-// 4. SERVICE WORKER REGISTRATION
+// 4. SERVICE WORKER REGISTRATION 
 // ==========================================================================
 let swRegistration = null;
 
@@ -680,7 +680,7 @@ function toggleKitchenMenuDropdown(forceState) {
 }
 
 // ==========================================================================
-// 8. RENDER KITCHEN MENU (With Search Filter & Selective Edit)
+// 8. RENDER KITCHEN MENU 
 // ==========================================================================
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
@@ -1570,7 +1570,44 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. INITIALIZE APP ON DOM READY
+// 16. EXPERIMENTAL AD CATCHER ENGINE
+// ==========================================================================
+// Intercepts the Monetag floating ad and forces it into our static container
+const adCatcher = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === 1 && (node.tagName === 'IFRAME' || node.tagName === 'DIV')) {
+        const zIndex = window.getComputedStyle(node).zIndex;
+        const position = window.getComputedStyle(node).position;
+        
+        if ((position === 'fixed' || position === 'absolute') && parseInt(zIndex) > 1000) {
+           const targetContainer = document.getElementById('monetag-banner-container');
+           if (targetContainer && !targetContainer.contains(node)) {
+             // Strip the floating CSS
+             node.style.setProperty('position', 'relative', 'important');
+             node.style.setProperty('top', 'auto', 'important');
+             node.style.setProperty('left', 'auto', 'important');
+             node.style.setProperty('right', 'auto', 'important');
+             node.style.setProperty('bottom', 'auto', 'important');
+             node.style.setProperty('z-index', '1', 'important');
+             node.style.setProperty('width', '100%', 'important');
+             node.style.setProperty('margin', '0 auto', 'important');
+             
+             // Move it under the Place Order button
+             targetContainer.appendChild(node);
+           }
+        }
+      }
+    });
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  adCatcher.observe(document.body, { childList: true, subtree: false });
+});
+
+// ==========================================================================
+// 17. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
