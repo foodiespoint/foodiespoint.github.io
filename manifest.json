@@ -1,0 +1,21 @@
+{
+  "name": "Foodies Point",
+  "short_name": "Foodies Point",
+  "start_url": "/foodies-point-beta/",
+  "scope": "/foodies-point-beta/",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#D9534F",
+  "icons": [
+    {
+      "src": "/foodies-point-beta/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/foodies-point-beta/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
