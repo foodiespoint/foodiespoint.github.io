@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=22">
+  <link rel="manifest" href="/manifest.json?v=23">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -29,7 +29,6 @@
       --white: #FFFFFF;
       --border-color: #EAEAEA;
       
-      /* Dynamic cumulative ad offset */
       --ad-offset: 0px; 
     }
 
@@ -50,9 +49,9 @@
       background-color: var(--bg-light);
     }
 
-    /* COMPLETE WINDOW RIGID WRAPPER */
+    /* COMPLETE WINDOW RIGID WRAPPER (Fixed so it translates cleanly) */
     #app-root {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       right: 0;
@@ -61,8 +60,7 @@
       transform: translateY(var(--ad-offset));
       transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      display: block;
     }
 
     #install-gate-overlay {
@@ -114,15 +112,16 @@
     }
 
     #main-app-content {
+      position: absolute;
+      top: 0; bottom: 0; left: 0; right: 0;
       display: none !important;
-      height: 100%;
-      width: 100%;
-      position: relative;
     }
 
     .app-header {
-      position: relative;
+      position: absolute;
       width: 100%;
+      top: 0;
+      left: 0;
       z-index: 2000;
       background: var(--white);
       display: flex;
@@ -131,7 +130,6 @@
       padding: 0 16px;
       height: 56px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      flex-shrink: 0;
     }
 
     .header-left-group {
@@ -201,15 +199,19 @@
       font-weight: 700;
     }
 
+    /* Restored Absolute Anchors: Enforces the clean 50/50 flex split */
     #customer-view {
       display: flex;
-      flex: 1;
-      min-height: 0;
+      position: absolute;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
       background: var(--bg-light);
       flex-direction: column;
       max-width: 600px;
       margin: 0 auto;
-      width: 100%;
     }
 
     .customer-half {
@@ -751,7 +753,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v22-Beta</span>
+          <span id="kitchen-version-badge">v23-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -961,6 +963,7 @@
     </div>
   </div>
 
-  <script src="/app.js?v=22"></script>
+  <!-- Force fetch Beta v23 -->
+  <script src="/app.js?v=23"></script>
 </body>
 </html>
