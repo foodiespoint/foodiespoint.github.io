@@ -8,17 +8,21 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <meta name="monetag" content="c057e3d4941b588d94aff4e941098c02">
+  <!-- ========================================== -->
+  <!-- PASTE YOUR MONETAG VERIFICATION SCRIPT HERE -->
+  <!-- e.g., <meta name="monetag" content="xyz123"> -->
+  <!-- ========================================== -->
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/foodies-point-beta/manifest.json?v=15">
+  <!-- URL paths fixed to root for GitHub Pages -->
+  <link rel="manifest" href="/manifest.json?v=16">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Foodies Point">
-  <link rel="apple-touch-icon" href="/foodies-point-beta/icon.png">
-  <link rel="icon" type="image/png" href="/foodies-point-beta/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="icon" type="image/png" href="/icon.png">
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -749,7 +753,7 @@
 
       <div class="header-right-group">
         <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-        <span id="kitchen-version-badge">v15-Beta</span>
+        <span id="kitchen-version-badge">v16-Beta</span>
         <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
       </div>
     </header>
@@ -973,6 +977,7 @@
     </div>
   </div>
 
-  <script src="/foodies-point-beta/app.js?v=15"></script>
+  <!-- Force fetching v16 of the script -->
+  <script src="/app.js?v=16"></script>
 </body>
 </html>
