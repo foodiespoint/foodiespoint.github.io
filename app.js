@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v22 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v23 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v22";
+const CURRENT_APP_VERSION = "v23";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -1570,23 +1570,22 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. CUMULATIVE MULTI-AD SHIFT & CLOSE DETECTOR
+// 16. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
   
-  // Inspect all root-level children injected outside #app-root
+  // Scans for any fixed/absolute elements near the top, regardless of z-index
   document.body.childNodes.forEach(child => {
     if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay') {
       const st = window.getComputedStyle(child);
       const isFixed = (st.position === 'fixed' || st.position === 'absolute');
-      const hasHighZ = parseInt(st.zIndex) > 1000;
-      const isVisible = st.display !== 'none' && st.visibility !== 'hidden' && parseFloat(st.opacity) > 0.05;
-
-      if (isFixed && hasHighZ && isVisible) {
+      
+      // Removed zIndex requirement: ad networks often use "auto"
+      if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
         const rect = child.getBoundingClientRect();
-        // Check if the element sits in the upper region of viewport
-        if (rect.top >= 0 && rect.top < 200 && rect.bottom > 0) {
+        // Check if element is clamped to the top of the viewport
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
           if (rect.bottom > maxBottom) {
             maxBottom = rect.bottom;
           }
@@ -1595,11 +1594,23 @@ function evaluateCumulativeAdHeight() {
     }
   });
 
-  if (maxBottom > 0) {
-    // Apply full height of all stacked ads + 6px breathing room
-    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 6)}px`);
+  // Monetag sometimes injects directly into the HTML node instead of Body
+  document.documentElement.childNodes.forEach(child => {
+    if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
+      const st = window.getComputedStyle(child);
+      if (st.position === 'fixed' || st.position === 'absolute') {
+        const rect = child.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
+          if (rect.bottom > maxBottom) maxBottom = rect.bottom;
+        }
+      }
+    }
+  });
+
+  // Safely shift the UI, cap at 400px so a broken ad doesn't wipe the screen
+  if (maxBottom > 0 && maxBottom < 400) {
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
   } else {
-    // When ads are closed or removed, smoothly restore app to original 0px position
     document.documentElement.style.setProperty('--ad-offset', '0px');
   }
 }
@@ -1608,7 +1619,6 @@ const adObserver = new MutationObserver(() => {
   evaluateCumulativeAdHeight();
 });
 
-// Periodic sanity loop to catch animated slide-ins or delayed close events
 setInterval(evaluateCumulativeAdHeight, 400);
 
 document.addEventListener("DOMContentLoaded", () => {
