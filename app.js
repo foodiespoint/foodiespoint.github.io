@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v19 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v20 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v19";
+const CURRENT_APP_VERSION = "v20";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -680,7 +680,7 @@ function toggleKitchenMenuDropdown(forceState) {
 }
 
 // ==========================================================================
-// 8. RENDER KITCHEN MENU (With Search Filter & Selective Edit)
+// 8. RENDER KITCHEN MENU
 // ==========================================================================
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
@@ -1460,7 +1460,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1570,10 +1570,8 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. NON-INVASIVE UI SHIFT OBSERVER (AD ACCOMMODATION)
+// 16. NON-INVASIVE UI SHIFT OBSERVER (RIGID BLOCK METHOD)
 // ==========================================================================
-// Actively monitors the document body. If an ad slides in at the top of the 
-// screen, it measures the ad's height and applies a CSS offset to the entire UI.
 const adObserver = new MutationObserver(() => {
   let adFound = false;
   
@@ -1582,14 +1580,12 @@ const adObserver = new MutationObserver(() => {
       const st = window.getComputedStyle(child);
       if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex) > 1000 && st.top === '0px') {
         adFound = true;
-        // Default to typical 70px mobile banner height if measurement isn't ready
         const adHeight = child.offsetHeight || 70;
         document.documentElement.style.setProperty('--ad-offset', `${adHeight}px`);
       }
     }
   });
 
-  // If the ad is closed/removed, reset the offset back to 0
   if (!adFound) {
     document.documentElement.style.setProperty('--ad-offset', '0px');
   }
