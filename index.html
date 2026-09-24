@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <meta name="monetag" content="c057e3d4941b588d94aff4e941098c02">
+
+  <title>Foodies Point Beta</title>
+
+  <link rel="manifest" href="/foodies-point-beta/manifest.json?v=15">
+  <meta name="theme-color" content="#D9534F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Foodies Point">
+  <link rel="apple-touch-icon" href="/foodies-point-beta/icon.png">
+  <link rel="icon" type="image/png" href="/foodies-point-beta/icon.png">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #D9534F;
+      --text-dark: #2D2D2D;
+      --bg-light: #F8F9FA;
+      --white: #FFFFFF;
+      --border-color: #EAEAEA;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      overscroll-behavior-y: none;
+      overscroll-behavior: none;
+      overflow: hidden;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    #install-gate-overlay {
+      display: flex !important;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-light);
+      z-index: 99999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .install-modal-card {
+      background: var(--white);
+      padding: 32px 24px;
+      border-radius: 18px;
+      width: 92%;
+      max-width: 360px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .install-modal-card h2 {
+      color: var(--primary-color);
+      font-size: 1.35rem;
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .install-modal-card p {
+      color: #555;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    #btn-native-install {
+      margin: 18px auto 0 auto;
+      width: 100%;
+      max-width: 240px;
+      display: block;
+      transition: all 0.3s ease;
+    }
+
+    #main-app-content {
+      display: none !important;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      background: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      height: 56px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .header-right-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      z-index: 2;
+      position: relative;
+    }
+
+    .app-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .btn-back-arrow, .btn-icon {
+      border: 1px solid var(--border-color);
+      background: var(--bg-light);
+      width: 36px;
+      height: 34px;
+      border-radius: 17px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding-bottom: 2px;
+    }
+
+    .btn-kitchen, .btn-kitchen-menu {
+      border: 1px solid var(--border-color);
+      background: var(--bg-light);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #kitchen-version-badge {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #888;
+      background: #F0F0F0;
+      padding: 4px 8px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    #customer-view {
+      display: flex;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--bg-light);
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .customer-half {
+      flex: 1 1 50%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 12px 16px 8px 16px;
+    }
+
+    .customer-upper {
+      border-bottom: 3px solid var(--primary-color);
+      background: var(--bg-light);
+    }
+
+    .menu-scroll-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .customer-checkout-bar {
+      flex-shrink: 0;
+      padding-top: 10px;
+      background: var(--bg-light);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-place-order {
+      width: 100%;
+      background: var(--primary-color);
+      color: var(--white);
+      border: none;
+      padding: 12px;
+      border-radius: 28px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .btn-place-order:disabled {
+      background: #CCCCCC;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .ad-banner-container {
+      width: 100%;
+      min-height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .customer-lower {
+      background: var(--white);
+    }
+
+    .history-scroll-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .menu-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s ease;
+    }
+
+    .dish-select-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .dish-checkbox {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .dish-info h4 {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .dish-info .price {
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .btn-oos {
+      border: 1px solid var(--primary-color);
+      background: var(--white);
+      color: var(--primary-color);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-oos.is-oos {
+      background: var(--primary-color);
+      color: var(--white);
+    }
+    
+    .btn-edit-item {
+      background: #F0F0F0;
+      border: 1px solid #CCC;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .badge-oos {
+      background: #EAEAEA;
+      color: #666;
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .quantity-stepper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .quantity-stepper button {
+      border: none;
+      background: transparent;
+      width: 32px;
+      height: 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .quantity-stepper span {
+      min-width: 28px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .customer-order-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .customer-order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-PENDING { background: #FFF3E0; color: #EF6C00; }
+    .status-ACCEPTED { background: #E8F5E9; color: #2E7D32; }
+    .status-REJECTED { background: #FFEBEE; color: #C62828; }
+
+    .kitchen-menu-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-publish, .btn-clear-menu, .btn-add-item {
+      flex: 1;
+      border: none;
+      padding: 11px 8px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .btn-publish {
+      background: var(--primary-color);
+      color: var(--white);
+      box-shadow: 0 3px 10px rgba(217, 83, 79, 0.25);
+    }
+    
+    .btn-add-item {
+      background: #4A90E2; 
+      color: var(--white);
+      box-shadow: 0 3px 10px rgba(74, 144, 226, 0.25);
+    }
+
+    .btn-clear-menu {
+      background: #EAEAEA;
+      color: #333;
+    }
+    
+    .search-bar-container {
+      margin-bottom: 14px;
+    }
+    
+    .search-bar-container input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    
+    .search-bar-container input:focus {
+      border-color: var(--primary-color);
+    }
+
+    #kitchen-view {
+      display: none;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1500;
+      background: var(--bg-light);
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow-y: auto;
+      padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sticky-section-title {
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      padding: 8px 0 10px 0;
+      margin-bottom: 10px;
+      z-index: 10;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-card {
+      background: var(--bg-light);
+      border-left: 4px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-accept { background: #E8F5E9; color: #2E7D32; }
+    .btn-deny { background: #FFEBEE; color: #C62828; }
+
+    .btn-action.btn-complete {
+      background: var(--primary-color);
+      color: var(--white);
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(217, 83, 79, 0.3);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-action.btn-complete:active { transform: scale(0.97); }
+
+    .kitchen-subpage {
+      display: none;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1700;
+      background: var(--bg-light);
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow-y: auto;
+      padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .subpage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      background: var(--bg-light);
+      z-index: 10;
+    }
+
+    .subpage-header h2 { color: var(--primary-color); font-size: 1.25rem; font-weight: 800; }
+
+    .customer-data-card {
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .version-badge {
+      background: #E3F2FD;
+      color: #1565C0;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .payment-summary-box {
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .kitchen-dropdown {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 16px;
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 2600;
+      min-width: 190px;
+      overflow: hidden;
+    }
+    
+    .kitchen-dropdown .dropdown-item {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-light);
+    }
+    
+    .kitchen-dropdown .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .kitchen-dropdown .dropdown-item:active {
+      background: var(--bg-light);
+    }
+    
+    .kitchen-dropdown-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: transparent;
+      z-index: 2500;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-card {
+      background: var(--white);
+      padding: 24px;
+      border-radius: 12px;
+      width: 88%;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .passcode-input-wrapper { position: relative; margin: 16px 0; }
+
+    .passcode-input-wrapper input {
+      width: 100%;
+      padding: 11px 44px 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.05rem;
+      outline: none;
+    }
+
+    .passcode-input-wrapper input:focus { border-color: var(--primary-color); }
+
+    .eye-toggle-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: #666;
+      padding: 0;
+    }
+
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 14px 0 18px 0;
+      text-align: left;
+    }
+
+    .form-field-group input, .form-field-group select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.98rem;
+      outline: none;
+      background: var(--white);
+    }
+
+    .form-field-group input:focus, .form-field-group select:focus {
+      border-color: var(--primary-color);
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: -4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================================== -->
+  <!-- 4. IRREMOVABLE INSTALL GATE OVERLAY                                    -->
+  <!-- ====================================================================== -->
+  <div id="install-gate-overlay">
+    <div class="install-modal-card">
+      <h2>Install Foodies Point</h2>
+      <p id="install-instruction-text">Install the app to view today's live menu and order food.</p>
+      
+      <button id="btn-native-install" class="btn-publish" onclick="triggerAppInstall()">
+        📲 Install App Now
+      </button>
+
+      <div id="install-manual-guide" style="display:none; margin-top:14px; font-size:0.85rem; color:#555; line-height:1.4; background:#F8F9FA; padding:10px 12px; border-radius:8px; border:1px solid #EAEAEA;">
+        Tap your browser menu <strong>(⋮ or Share ⎋)</strong> and select <strong>"Install App"</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 5. MASTER APP CONTAINER                                                -->
+  <!-- ====================================================================== -->
+  <div id="main-app-content">
+
+    <header class="app-header" id="app-header">
+      <div class="header-left-group">
+        <button class="btn-kitchen" id="header-kitchen-btn" onclick="openKitchenPINModal()">Kitchen</button>
+        <button class="btn-back-arrow" id="header-back-btn" onclick="handleHeaderBack()" style="display: none;" aria-label="Back">←</button>
+      </div>
+
+      <div class="app-title" id="main-app-title">Foodies Point</div>
+
+      <div class="header-right-group">
+        <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
+        <span id="kitchen-version-badge">v15-Beta</span>
+        <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
+      </div>
+    </header>
+
+    <main id="customer-view">
+      <div class="customer-half customer-upper">
+        <h2 class="section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
+        <div class="menu-scroll-area">
+          <div class="menu-list" id="customer-menu-container">
+            <p style="text-align:center; padding: 30px; color:#666;">Loading live menu...</p>
+          </div>
+        </div>
+        <div class="customer-checkout-bar">
+          <button class="btn-place-order" id="btn-place-order" onclick="openOrderOptionsModal()">Place Order</button>
+          
+          <!-- ========================================== -->
+          <!-- MONETAG AD ZONE CONTAINER HERE               -->
+          <!-- Paste your Monetag ad script inside this div -->
+          <!-- ========================================== -->
+          <div id="monetag-banner-container" class="ad-banner-container"></div>
+
+        </div>
+      </div>
+
+      <div class="customer-half customer-lower">
+        <div class="sticky-section-title" style="flex-shrink: 0;">
+          <span>My Order History & Status</span>
+          <button type="button" onclick="clearCustomerHistory()" style="border:none; background:transparent; font-size:0.75rem; color:#888; cursor:pointer;">Clear</button>
+        </div>
+        <div class="history-scroll-area" id="customer-orders-container">
+          <p style="text-align:center; padding: 20px; color:#666;">No past orders yet. Orders placed from this device will appear here!</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- FULL PAGE MENU CONSOLE -->
+    <section id="kitchen-view">
+      <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
+      <!-- UPDATED ORDER: Clear -> Add Item -> Publish -->
+      <div class="kitchen-menu-actions">
+        <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
+        <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
+        <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
+      </div>
+      <div class="search-bar-container">
+        <input type="text" id="kitchen-menu-search" placeholder="Search menu..." onkeyup="renderKitchenMenu()">
+      </div>
+      <div class="menu-list" id="kitchen-menu-container"></div>
+    </section>
+
+    <!-- SUBPAGE: ORDERS -->
+    <section class="kitchen-subpage" id="kitchen-orders-view">
+      <div class="subpage-header">
+        <h2>Live Incoming Orders</h2>
+      </div>
+      <div id="kitchen-orders-container"></div>
+    </section>
+
+    <!-- SUBPAGE: CUSTOMER DATA -->
+    <section class="kitchen-subpage" id="customer-data-view">
+      <div class="subpage-header">
+        <h2>Customer Data</h2>
+      </div>
+      <div id="customer-directory-container">
+        <p style="text-align:center; padding: 30px; color:#666;">Loading customer directory...</p>
+      </div>
+    </section>
+
+    <!-- SUBPAGE: PAYMENT DATA -->
+    <section class="kitchen-subpage" id="payment-details-view">
+      <div class="subpage-header">
+        <h2>Payment Records & Ledger</h2>
+      </div>
+      <div id="payment-ledger-container">
+        <p style="text-align:center; padding: 30px; color:#666;">Loading payment records...</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
+  <div id="kitchen-dropdown" class="kitchen-dropdown">
+    <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
+    <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
+    <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 6. MODALS                                                              -->
+  <!-- ====================================================================== -->
+
+  <!-- Add Item Modal -->
+  <div class="modal-overlay" id="add-item-modal">
+    <div class="modal-card">
+      <h3>Add New Item</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">Add a new dish to the persistent menu.</p>
+      
+      <div class="form-field-group">
+        <span class="form-label">Dish Name:</span>
+        <input type="text" id="add-item-name" placeholder="e.g. Masala Dosa">
+
+        <span class="form-label" style="margin-top: 8px;">Category:</span>
+        <select id="add-item-category-select" onchange="handleCategorySelectChange()"></select>
+        <input type="text" id="add-item-category-new" style="margin-top: 8px; display: none;" placeholder="Enter new category name">
+        
+        <span class="form-label" style="margin-top: 8px;">Price (₹):</span>
+        <input type="number" id="add-item-price" placeholder="e.g. 120" min="1">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="background: #EAEAEA;" onclick="closeAddItemModal()">Cancel</button>
+        <button class="btn-action btn-complete" onclick="saveNewItem()">Add to Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div class="modal-overlay" id="edit-item-modal">
+    <div class="modal-card">
+      <h3>Edit Dish</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">Modify the name or price of this item.</p>
+      
+      <input type="hidden" id="edit-item-id">
+      <div class="form-field-group">
+        <span class="form-label">Dish Name:</span>
+        <input type="text" id="edit-item-name">
+        
+        <span class="form-label" style="margin-top: 8px;">Price (₹):</span>
+        <input type="number" id="edit-item-price" min="1">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="background: #EAEAEA;" onclick="closeEditItemModal()">Cancel</button>
+        <button class="btn-action btn-complete" onclick="saveEditedItem()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer: Delivery or Takeaway & Schedule Time -->
+  <div class="modal-overlay" id="order-options-modal">
+    <div class="modal-card">
+      <h3>Order Details</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">How would you like your order?</p>
+      
+      <div class="form-field-group">
+        <span class="form-label">Order Type:</span>
+        <select id="order-type-select">
+          <option value="Takeaway">🥡 Takeaway (Pick up)</option>
+          <option value="Delivery">🚚 Delivery</option>
+        </select>
+
+        <span class="form-label" style="margin-top: 8px;">Preferred Time:</span>
+        <input type="time" id="order-time-input" required>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="background: #EAEAEA;" onclick="closeOrderOptionsModal()">Cancel</button>
+        <button class="btn-action btn-complete" onclick="finalizeOrderPlacement()">Confirm & Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kitchen: Input Delivery Charge for Delivery Orders -->
+  <div class="modal-overlay" id="delivery-charge-modal">
+    <div class="modal-card">
+      <h3>Delivery Charge</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">This is a Delivery order. Enter the delivery fee to add to the total.</p>
+      
+      <div class="form-field-group">
+        <span class="form-label">Delivery Charge (₹):</span>
+        <input type="number" id="kitchen-delivery-fee-input" placeholder="e.g. 30" min="0">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="background: #EAEAEA;" onclick="closeDeliveryChargeModal()">Cancel</button>
+        <button class="btn-action btn-complete" onclick="confirmDeliveryAcceptance()">Add & Accept Order</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Onboarding Modals -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal-card">
+      <h3>Customer Details</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">Enter your details to register and order</p>
+      <div class="form-field-group">
+        <input type="text" id="cust-name-input" placeholder="Your Full Name" maxlength="40">
+        <input type="tel" id="cust-mobile-input" placeholder="10-digit Mobile Number" maxlength="10">
+      </div>
+      <div style="display: flex;">
+        <button class="btn-action btn-complete" style="width: 100%;" onclick="saveCustomerProfile()">Save & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="notification-permission-modal">
+    <div class="modal-card">
+      <div style="font-size: 2.8rem; margin-bottom: 8px;">🔔</div>
+      <h3 style="color: var(--primary-color); font-size: 1.2rem; font-weight: 800;">Enable Notifications</h3>
+      <p style="font-size: 0.9rem; color: #555; margin: 8px 0 18px 0; line-height: 1.4;">
+        Get real-time updates when your order is accepted, ready for pickup, or when today's live menu goes live!
+      </p>
+      <div style="display: flex;">
+        <button class="btn-action btn-complete" style="width: 100%;" onclick="requestPushAccess()">🔔 Enable Notifications</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="pin-modal">
+    <div class="modal-card">
+      <h3>Kitchen Console</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 4px;">Enter security passcode to manage console</p>
+      <div class="passcode-input-wrapper">
+        <input type="password" id="kitchen-pin-input" placeholder="Enter Kitchen Passcode" maxlength="30">
+        <button type="button" class="eye-toggle-btn" id="toggle-passcode-eye" onclick="togglePasscodeVisibility()" aria-label="Toggle password visibility">👁️</button>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" style="background: #EAEAEA;" onclick="closePINModal()">Cancel</button>
+        <button class="btn-action btn-complete" onclick="verifyKitchenPIN()">Enter</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/foodies-point-beta/app.js?v=15"></script>
+</body>
+</html>
