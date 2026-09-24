@@ -8,15 +8,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- ========================================== -->
-  <!-- PASTE YOUR MONETAG VERIFICATION SCRIPT HERE -->
-  <!-- e.g., <meta name="monetag" content="xyz123"> -->
-  <!-- ========================================== -->
+  <!-- Monetag Verification Meta Tag (If needed) -->
+  <meta name="monetag" content="xyz123">
 
   <title>Foodies Point Beta</title>
 
-  <!-- URL paths fixed to root for GitHub Pages -->
-  <link rel="manifest" href="/manifest.json?v=16">
+  <link rel="manifest" href="/manifest.json?v=17">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -720,6 +717,11 @@
 </head>
 <body>
 
+  <!-- ========================================== -->
+  <!-- MONETAG IN-PAGE PUSH SCRIPT (ADDED FOR V17)-->
+  <!-- ========================================== -->
+  <script>(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
   <!-- ====================================================================== -->
   <!-- 4. IRREMOVABLE INSTALL GATE OVERLAY                                    -->
   <!-- ====================================================================== -->
@@ -753,7 +755,7 @@
 
       <div class="header-right-group">
         <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-        <span id="kitchen-version-badge">v16-Beta</span>
+        <span id="kitchen-version-badge">v17-Beta</span>
         <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
       </div>
     </header>
@@ -769,12 +771,8 @@
         <div class="customer-checkout-bar">
           <button class="btn-place-order" id="btn-place-order" onclick="openOrderOptionsModal()">Place Order</button>
           
-          <!-- ========================================== -->
-          <!-- MONETAG AD ZONE CONTAINER HERE               -->
-          <!-- Paste your Monetag ad script inside this div -->
-          <!-- ========================================== -->
+          <!-- Monetag Ad Banner Placeholder (Optional) -->
           <div id="monetag-banner-container" class="ad-banner-container"></div>
-
         </div>
       </div>
 
@@ -792,7 +790,6 @@
     <!-- FULL PAGE MENU CONSOLE -->
     <section id="kitchen-view">
       <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
-      <!-- UPDATED ORDER: Clear -> Add Item -> Publish -->
       <div class="kitchen-menu-actions">
         <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
         <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
@@ -977,7 +974,7 @@
     </div>
   </div>
 
-  <!-- Force fetching v16 of the script -->
-  <script src="/app.js?v=16"></script>
+  <!-- Force fetching v17 of the script -->
+  <script src="/app.js?v=17"></script>
 </body>
 </html>
