@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v18 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v19 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v18";
+const CURRENT_APP_VERSION = "v19";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -680,7 +680,7 @@ function toggleKitchenMenuDropdown(forceState) {
 }
 
 // ==========================================================================
-// 8. RENDER KITCHEN MENU 
+// 8. RENDER KITCHEN MENU (With Search Filter & Selective Edit)
 // ==========================================================================
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
@@ -1460,7 +1460,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1570,40 +1570,33 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. EXPERIMENTAL AD CATCHER ENGINE
+// 16. NON-INVASIVE UI SHIFT OBSERVER (AD ACCOMMODATION)
 // ==========================================================================
-// Intercepts the Monetag floating ad and forces it into our static container
-const adCatcher = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    mutation.addedNodes.forEach((node) => {
-      if (node.nodeType === 1 && (node.tagName === 'IFRAME' || node.tagName === 'DIV')) {
-        const zIndex = window.getComputedStyle(node).zIndex;
-        const position = window.getComputedStyle(node).position;
-        
-        if ((position === 'fixed' || position === 'absolute') && parseInt(zIndex) > 1000) {
-           const targetContainer = document.getElementById('monetag-banner-container');
-           if (targetContainer && !targetContainer.contains(node)) {
-             // Strip the floating CSS
-             node.style.setProperty('position', 'relative', 'important');
-             node.style.setProperty('top', 'auto', 'important');
-             node.style.setProperty('left', 'auto', 'important');
-             node.style.setProperty('right', 'auto', 'important');
-             node.style.setProperty('bottom', 'auto', 'important');
-             node.style.setProperty('z-index', '1', 'important');
-             node.style.setProperty('width', '100%', 'important');
-             node.style.setProperty('margin', '0 auto', 'important');
-             
-             // Move it under the Place Order button
-             targetContainer.appendChild(node);
-           }
-        }
+// Actively monitors the document body. If an ad slides in at the top of the 
+// screen, it measures the ad's height and applies a CSS offset to the entire UI.
+const adObserver = new MutationObserver(() => {
+  let adFound = false;
+  
+  document.body.childNodes.forEach(child => {
+    if (child.nodeType === 1) {
+      const st = window.getComputedStyle(child);
+      if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex) > 1000 && st.top === '0px') {
+        adFound = true;
+        // Default to typical 70px mobile banner height if measurement isn't ready
+        const adHeight = child.offsetHeight || 70;
+        document.documentElement.style.setProperty('--ad-offset', `${adHeight}px`);
       }
-    });
+    }
   });
+
+  // If the ad is closed/removed, reset the offset back to 0
+  if (!adFound) {
+    document.documentElement.style.setProperty('--ad-offset', '0px');
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  adCatcher.observe(document.body, { childList: true, subtree: false });
+  adObserver.observe(document.body, { childList: true });
 });
 
 // ==========================================================================
