@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v21 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v22 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v21";
+const CURRENT_APP_VERSION = "v22";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -1460,7 +1460,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1570,29 +1570,55 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. NON-INVASIVE UI SHIFT OBSERVER (GLOBAL WRAPPER METHOD)
+// 16. CUMULATIVE MULTI-AD SHIFT & CLOSE DETECTOR
 // ==========================================================================
-const adObserver = new MutationObserver(() => {
-  let adFound = false;
+function evaluateCumulativeAdHeight() {
+  let maxBottom = 0;
   
+  // Inspect all root-level children injected outside #app-root
   document.body.childNodes.forEach(child => {
-    if (child.nodeType === 1) {
+    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay') {
       const st = window.getComputedStyle(child);
-      if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex) > 1000 && st.top === '0px') {
-        adFound = true;
-        const adHeight = child.offsetHeight || 70;
-        document.documentElement.style.setProperty('--ad-offset', `${adHeight}px`);
+      const isFixed = (st.position === 'fixed' || st.position === 'absolute');
+      const hasHighZ = parseInt(st.zIndex) > 1000;
+      const isVisible = st.display !== 'none' && st.visibility !== 'hidden' && parseFloat(st.opacity) > 0.05;
+
+      if (isFixed && hasHighZ && isVisible) {
+        const rect = child.getBoundingClientRect();
+        // Check if the element sits in the upper region of viewport
+        if (rect.top >= 0 && rect.top < 200 && rect.bottom > 0) {
+          if (rect.bottom > maxBottom) {
+            maxBottom = rect.bottom;
+          }
+        }
       }
     }
   });
 
-  if (!adFound) {
+  if (maxBottom > 0) {
+    // Apply full height of all stacked ads + 6px breathing room
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 6)}px`);
+  } else {
+    // When ads are closed or removed, smoothly restore app to original 0px position
     document.documentElement.style.setProperty('--ad-offset', '0px');
   }
+}
+
+const adObserver = new MutationObserver(() => {
+  evaluateCumulativeAdHeight();
 });
 
+// Periodic sanity loop to catch animated slide-ins or delayed close events
+setInterval(evaluateCumulativeAdHeight, 400);
+
 document.addEventListener("DOMContentLoaded", () => {
-  adObserver.observe(document.body, { childList: true });
+  adObserver.observe(document.body, { 
+    childList: true, 
+    subtree: true, 
+    attributes: true, 
+    attributeFilter: ['style', 'class'] 
+  });
+  evaluateCumulativeAdHeight();
 });
 
 // ==========================================================================
