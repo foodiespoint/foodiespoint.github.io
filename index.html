@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=19">
+  <link rel="manifest" href="/manifest.json?v=20">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -29,7 +29,6 @@
       --white: #FFFFFF;
       --border-color: #EAEAEA;
       
-      /* Dynamic offset variable controlled by JS Observer */
       --ad-offset: 0px; 
     }
 
@@ -62,6 +61,8 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      padding-top: calc(20px + var(--ad-offset));
+      transition: padding-top 0.3s ease;
       text-align: center;
     }
 
@@ -104,7 +105,6 @@
       display: none !important;
     }
 
-    /* SHIFT IMPLEMENTATION: Headers and viewports dynamically transition down based on ad height */
     .app-header {
       position: sticky;
       top: var(--ad-offset);
@@ -186,11 +186,13 @@
       font-weight: 700;
     }
 
+    /* Fixed rigid height to prevent internal squishing when shifted */
     #customer-view {
       display: flex;
       position: fixed;
       top: calc(56px + var(--ad-offset));
-      bottom: 0;
+      height: calc(100vh - 56px);
+      height: calc(100dvh - 56px);
       left: 0;
       right: 0;
       z-index: 1000;
@@ -254,11 +256,14 @@
       background: var(--white);
     }
 
+    /* Padding added to allow scrolling past the portion pushed off-screen */
     .history-scroll-area {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
       padding-right: 4px;
+      padding-bottom: calc(10px + var(--ad-offset));
+      transition: padding-bottom 0.3s ease;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -455,7 +460,8 @@
       display: none;
       position: fixed;
       top: calc(56px + var(--ad-offset));
-      bottom: 0;
+      height: calc(100vh - 56px);
+      height: calc(100dvh - 56px);
       left: 0;
       right: 0;
       z-index: 1500;
@@ -465,8 +471,9 @@
       margin: 0 auto;
       overflow-y: auto;
       padding: 16px;
+      padding-bottom: calc(16px + var(--ad-offset));
+      transition: top 0.3s ease, padding-bottom 0.3s ease;
       -webkit-overflow-scrolling: touch;
-      transition: top 0.3s ease;
     }
 
     .sticky-section-title {
@@ -533,7 +540,8 @@
       display: none;
       position: fixed;
       top: calc(56px + var(--ad-offset));
-      bottom: 0;
+      height: calc(100vh - 56px);
+      height: calc(100dvh - 56px);
       left: 0;
       right: 0;
       z-index: 1700;
@@ -543,8 +551,9 @@
       margin: 0 auto;
       overflow-y: auto;
       padding: 16px;
+      padding-bottom: calc(16px + var(--ad-offset));
+      transition: top 0.3s ease, padding-bottom 0.3s ease;
       -webkit-overflow-scrolling: touch;
-      transition: top 0.3s ease;
     }
 
     .subpage-header {
@@ -640,6 +649,8 @@
       z-index: 3000;
       justify-content: center;
       align-items: center;
+      padding-top: var(--ad-offset);
+      transition: padding-top 0.3s ease;
     }
 
     .modal-card {
@@ -746,7 +757,7 @@
 
       <div class="header-right-group">
         <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-        <span id="kitchen-version-badge">v19-Beta</span>
+        <span id="kitchen-version-badge">v20-Beta</span>
         <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
       </div>
     </header>
@@ -962,7 +973,6 @@
     </div>
   </div>
 
-  <!-- Force fetching v19 of the script -->
-  <script src="/app.js?v=19"></script>
+  <script src="/app.js?v=20"></script>
 </body>
 </html>
