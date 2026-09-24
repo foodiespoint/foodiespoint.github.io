@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=21">
+  <link rel="manifest" href="/manifest.json?v=22">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -29,6 +29,7 @@
       --white: #FFFFFF;
       --border-color: #EAEAEA;
       
+      /* Dynamic cumulative ad offset */
       --ad-offset: 0px; 
     }
 
@@ -44,11 +45,24 @@
       overscroll-behavior-y: none;
       overscroll-behavior: none;
       overflow: hidden;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-light);
     }
 
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-dark);
+    /* COMPLETE WINDOW RIGID WRAPPER */
+    #app-root {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(100vh - var(--ad-offset));
+      height: calc(100dvh - var(--ad-offset));
+      transform: translateY(var(--ad-offset));
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     #install-gate-overlay {
@@ -99,23 +113,15 @@
       transition: all 0.3s ease;
     }
 
-    /* GLOBAL APP WRAPPER: Shifts down entirely by --ad-offset and shrinks bottom */
     #main-app-content {
       display: none !important;
-      position: relative;
+      height: 100%;
       width: 100%;
-      height: calc(100vh - var(--ad-offset));
-      height: calc(100dvh - var(--ad-offset));
-      transform: translateY(var(--ad-offset));
-      transition: transform 0.3s ease, height 0.3s ease;
-      overflow: hidden;
+      position: relative;
     }
 
-    /* Header is absolute relative to the shifted master container */
     .app-header {
-      position: absolute;
-      top: 0;
-      left: 0;
+      position: relative;
       width: 100%;
       z-index: 2000;
       background: var(--white);
@@ -125,6 +131,7 @@
       padding: 0 16px;
       height: 56px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
     }
 
     .header-left-group {
@@ -194,19 +201,15 @@
       font-weight: 700;
     }
 
-    /* All views bind absolutely to the master container so they stay solid */
     #customer-view {
       display: flex;
-      position: absolute;
-      top: 56px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
+      flex: 1;
+      min-height: 0;
       background: var(--bg-light);
       flex-direction: column;
       max-width: 600px;
       margin: 0 auto;
+      width: 100%;
     }
 
     .customer-half {
@@ -718,9 +721,7 @@
   <!-- MONETAG IN-PAGE PUSH SCRIPT -->
   <script>(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
-  <!-- ====================================================================== -->
-  <!-- 4. IRREMOVABLE INSTALL GATE OVERLAY                                    -->
-  <!-- ====================================================================== -->
+  <!-- IRREMOVABLE INSTALL GATE OVERLAY -->
   <div id="install-gate-overlay">
     <div class="install-modal-card">
       <h2>Install Foodies Point</h2>
@@ -736,107 +737,103 @@
     </div>
   </div>
 
-  <!-- ====================================================================== -->
-  <!-- 5. MASTER APP CONTAINER (Transformed)                                  -->
-  <!-- ====================================================================== -->
-  <div id="main-app-content">
+  <!-- MASTER APP CONTAINER IN RIGID TRANSLATING ROOT -->
+  <div id="app-root">
+    <div id="main-app-content">
 
-    <header class="app-header" id="app-header">
-      <div class="header-left-group">
-        <button class="btn-kitchen" id="header-kitchen-btn" onclick="openKitchenPINModal()">Kitchen</button>
-        <button class="btn-back-arrow" id="header-back-btn" onclick="handleHeaderBack()" style="display: none;" aria-label="Back">←</button>
-      </div>
+      <header class="app-header" id="app-header">
+        <div class="header-left-group">
+          <button class="btn-kitchen" id="header-kitchen-btn" onclick="openKitchenPINModal()">Kitchen</button>
+          <button class="btn-back-arrow" id="header-back-btn" onclick="handleHeaderBack()" style="display: none;" aria-label="Back">←</button>
+        </div>
 
-      <div class="app-title" id="main-app-title">Foodies Point</div>
+        <div class="app-title" id="main-app-title">Foodies Point</div>
 
-      <div class="header-right-group">
-        <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-        <span id="kitchen-version-badge">v21-Beta</span>
-        <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
-      </div>
-    </header>
+        <div class="header-right-group">
+          <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
+          <span id="kitchen-version-badge">v22-Beta</span>
+          <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
+        </div>
+      </header>
 
-    <main id="customer-view">
-      <div class="customer-half customer-upper">
-        <h2 class="section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
-        <div class="menu-scroll-area">
-          <div class="menu-list" id="customer-menu-container">
-            <p style="text-align:center; padding: 30px; color:#666;">Loading live menu...</p>
+      <main id="customer-view">
+        <div class="customer-half customer-upper">
+          <h2 class="section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
+          <div class="menu-scroll-area">
+            <div class="menu-list" id="customer-menu-container">
+              <p style="text-align:center; padding: 30px; color:#666;">Loading live menu...</p>
+            </div>
+          </div>
+          <div class="customer-checkout-bar">
+            <button class="btn-place-order" id="btn-place-order" onclick="openOrderOptionsModal()">Place Order</button>
           </div>
         </div>
-        <div class="customer-checkout-bar">
-          <button class="btn-place-order" id="btn-place-order" onclick="openOrderOptionsModal()">Place Order</button>
+
+        <div class="customer-half customer-lower">
+          <div class="sticky-section-title" style="flex-shrink: 0;">
+            <span>My Order History & Status</span>
+            <button type="button" onclick="clearCustomerHistory()" style="border:none; background:transparent; font-size:0.75rem; color:#888; cursor:pointer;">Clear</button>
+          </div>
+          <div class="history-scroll-area" id="customer-orders-container">
+            <p style="text-align:center; padding: 20px; color:#666;">No past orders yet. Orders placed from this device will appear here!</p>
+          </div>
         </div>
-      </div>
+      </main>
 
-      <div class="customer-half customer-lower">
-        <div class="sticky-section-title" style="flex-shrink: 0;">
-          <span>My Order History & Status</span>
-          <button type="button" onclick="clearCustomerHistory()" style="border:none; background:transparent; font-size:0.75rem; color:#888; cursor:pointer;">Clear</button>
+      <!-- FULL PAGE MENU CONSOLE -->
+      <section id="kitchen-view">
+        <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
+        <div class="kitchen-menu-actions">
+          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
+          <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
+          <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
-        <div class="history-scroll-area" id="customer-orders-container">
-          <p style="text-align:center; padding: 20px; color:#666;">No past orders yet. Orders placed from this device will appear here!</p>
+        <div class="search-bar-container">
+          <input type="text" id="kitchen-menu-search" placeholder="Search menu..." onkeyup="renderKitchenMenu()">
         </div>
-      </div>
-    </main>
+        <div class="menu-list" id="kitchen-menu-container"></div>
+      </section>
 
-    <!-- FULL PAGE MENU CONSOLE -->
-    <section id="kitchen-view">
-      <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
-      <div class="kitchen-menu-actions">
-        <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
-        <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
-        <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
-      </div>
-      <div class="search-bar-container">
-        <input type="text" id="kitchen-menu-search" placeholder="Search menu..." onkeyup="renderKitchenMenu()">
-      </div>
-      <div class="menu-list" id="kitchen-menu-container"></div>
-    </section>
+      <!-- SUBPAGE: ORDERS -->
+      <section class="kitchen-subpage" id="kitchen-orders-view">
+        <div class="subpage-header">
+          <h2>Live Incoming Orders</h2>
+        </div>
+        <div id="kitchen-orders-container"></div>
+      </section>
 
-    <!-- SUBPAGE: ORDERS -->
-    <section class="kitchen-subpage" id="kitchen-orders-view">
-      <div class="subpage-header">
-        <h2>Live Incoming Orders</h2>
-      </div>
-      <div id="kitchen-orders-container"></div>
-    </section>
+      <!-- SUBPAGE: CUSTOMER DATA -->
+      <section class="kitchen-subpage" id="customer-data-view">
+        <div class="subpage-header">
+          <h2>Customer Data</h2>
+        </div>
+        <div id="customer-directory-container">
+          <p style="text-align:center; padding: 30px; color:#666;">Loading customer directory...</p>
+        </div>
+      </section>
 
-    <!-- SUBPAGE: CUSTOMER DATA -->
-    <section class="kitchen-subpage" id="customer-data-view">
-      <div class="subpage-header">
-        <h2>Customer Data</h2>
-      </div>
-      <div id="customer-directory-container">
-        <p style="text-align:center; padding: 30px; color:#666;">Loading customer directory...</p>
-      </div>
-    </section>
+      <!-- SUBPAGE: PAYMENT DATA -->
+      <section class="kitchen-subpage" id="payment-details-view">
+        <div class="subpage-header">
+          <h2>Payment Records & Ledger</h2>
+        </div>
+        <div id="payment-ledger-container">
+          <p style="text-align:center; padding: 30px; color:#666;">Loading payment records...</p>
+        </div>
+      </section>
 
-    <!-- SUBPAGE: PAYMENT DATA -->
-    <section class="kitchen-subpage" id="payment-details-view">
-      <div class="subpage-header">
-        <h2>Payment Records & Ledger</h2>
+      <div id="kitchen-dropdown" class="kitchen-dropdown">
+        <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
+        <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
+        <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
       </div>
-      <div id="payment-ledger-container">
-        <p style="text-align:center; padding: 30px; color:#666;">Loading payment records...</p>
-      </div>
-    </section>
 
-    <div id="kitchen-dropdown" class="kitchen-dropdown">
-      <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
-      <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
-      <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
-    </div>
-
-  </div> <!-- End Main App Content Wrapper -->
+    </div> <!-- End main-app-content -->
+  </div> <!-- End app-root -->
 
   <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
 
-  <!-- ====================================================================== -->
-  <!-- 6. MODALS                                                              -->
-  <!-- ====================================================================== -->
-
-  <!-- Add Item Modal -->
+  <!-- MODALS -->
   <div class="modal-overlay" id="add-item-modal">
     <div class="modal-card">
       <h3>Add New Item</h3>
@@ -861,7 +858,6 @@
     </div>
   </div>
 
-  <!-- Edit Item Modal -->
   <div class="modal-overlay" id="edit-item-modal">
     <div class="modal-card">
       <h3>Edit Dish</h3>
@@ -883,7 +879,6 @@
     </div>
   </div>
 
-  <!-- Customer: Delivery or Takeaway & Schedule Time -->
   <div class="modal-overlay" id="order-options-modal">
     <div class="modal-card">
       <h3>Order Details</h3>
@@ -907,7 +902,6 @@
     </div>
   </div>
 
-  <!-- Kitchen: Input Delivery Charge for Delivery Orders -->
   <div class="modal-overlay" id="delivery-charge-modal">
     <div class="modal-card">
       <h3>Delivery Charge</h3>
@@ -925,7 +919,6 @@
     </div>
   </div>
   
-  <!-- Onboarding Modals -->
   <div class="modal-overlay" id="profile-modal">
     <div class="modal-card">
       <h3>Customer Details</h3>
@@ -968,7 +961,6 @@
     </div>
   </div>
 
-  <!-- Force fetching v21 of the script -->
-  <script src="/app.js?v=21"></script>
+  <script src="/app.js?v=22"></script>
 </body>
 </html>
