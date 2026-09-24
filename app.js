@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v20 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v21 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v20";
+const CURRENT_APP_VERSION = "v21";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -344,7 +344,7 @@ async function notifyKitchenNewOrder(orderData) {
 }
 
 // ==========================================================================
-// 4. SERVICE WORKER REGISTRATION 
+// 4. SERVICE WORKER REGISTRATION
 // ==========================================================================
 let swRegistration = null;
 
@@ -1460,7 +1460,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1570,7 +1570,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. NON-INVASIVE UI SHIFT OBSERVER (RIGID BLOCK METHOD)
+// 16. NON-INVASIVE UI SHIFT OBSERVER (GLOBAL WRAPPER METHOD)
 // ==========================================================================
 const adObserver = new MutationObserver(() => {
   let adFound = false;
