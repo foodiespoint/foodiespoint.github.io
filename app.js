@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v30 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v31 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v30";
+const CURRENT_APP_VERSION = "v31";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -35,7 +35,7 @@ function executeAppLogin() {
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap button/title for the side-by-side loading ring immediately
+  // 1. Swap button/title for the prominent stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
@@ -487,14 +487,10 @@ function enforceInstallGate() {
   const splashScreen = document.getElementById('app-splash-screen');
 
   if (isStandalonePWA()) {
-    // Hide install gate and reveal app DOM (hidden under splash screen)
     if (installGate) installGate.style.setProperty('display', 'none', 'important');
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
-    
-    // Show the interactive Splash Screen (Login Button triggers ad via executeAppLogin)
     if (splashScreen) splashScreen.style.display = 'block';
   } else {
-    // If not installed, ensure Splash is completely hidden so they can click Install
     if (splashScreen) splashScreen.style.display = 'none';
   }
 }
