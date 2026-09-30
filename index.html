@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- MONETAG VIGNETTE BANNER SCRIPT -->
-  <script>(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
@@ -13,8 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <!-- Root absolute paths restored for root repo -->
-  <link rel="manifest" href="/manifest.json?v=27">
+  <link rel="manifest" href="/manifest.json?v=28">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -32,8 +28,6 @@
       --bg-light: #F8F9FA;
       --white: #FFFFFF;
       --border-color: #EAEAEA;
-      
-      --ad-offset: 0px; 
     }
 
     * {
@@ -55,11 +49,11 @@
 
     /* SPLASH / LANDING SCREEN */
     #app-splash-screen {
+      display: none; /* Hidden by default, injected by enforceInstallGate */
       position: fixed;
       inset: 0;
       background: var(--white);
       z-index: 100000;
-      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -117,6 +111,7 @@
     }
 
     .splash-btn {
+      display: inline-block;
       width: 100%;
       max-width: 240px;
       background: var(--primary-color);
@@ -127,6 +122,8 @@
       font-weight: 700;
       border-radius: 30px;
       cursor: pointer;
+      text-decoration: none;
+      box-sizing: border-box;
       box-shadow: 0 6px 18px rgba(217, 83, 79, 0.35);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -170,10 +167,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: calc(100vh - var(--ad-offset));
-      height: calc(100dvh - var(--ad-offset));
-      transform: translateY(var(--ad-offset));
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       display: block;
     }
@@ -720,7 +715,7 @@
     .kitchen-dropdown {
       display: none;
       position: fixed;
-      top: calc(60px + var(--ad-offset));
+      top: 60px;
       right: 16px;
       background: var(--white);
       border: 1px solid var(--border-color);
@@ -729,7 +724,6 @@
       z-index: 2600;
       min-width: 190px;
       overflow: hidden;
-      transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
     .kitchen-dropdown .dropdown-item {
@@ -765,8 +759,6 @@
       z-index: 3000;
       justify-content: center;
       align-items: center;
-      padding-top: var(--ad-offset);
-      transition: padding-top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .modal-card {
@@ -837,7 +829,7 @@
 </head>
 <body>
 
-  <!-- APP LANDING / SPLASH SCREEN -->
+  <!-- APP LANDING / SPLASH SCREEN (Now securely hidden behind the Install Gate until installed) -->
   <div id="app-splash-screen">
     <div class="splash-content">
       <div class="splash-logo-wrapper">
@@ -846,9 +838,10 @@
       <h1 class="splash-title">Foodies Point</h1>
       <p class="splash-tagline">Delicious Food, Made Fresh.</p>
       
-      <button id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
+      <!-- Anchor link trigger designed specifically for Vignette interception -->
+      <a href="javascript:void(0)" id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
         Login & Enter
-      </button>
+      </a>
 
       <div id="splash-loader-box" class="splash-loading-box">
         <div class="splash-loader"></div>
@@ -873,7 +866,7 @@
     </div>
   </div>
 
-  <!-- MASTER APP CONTAINER IN RIGID TRANSLATING ROOT -->
+  <!-- MASTER APP CONTAINER -->
   <div id="app-root">
     <div id="main-app-content">
 
@@ -887,7 +880,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v27-Beta</span>
+          <span id="kitchen-version-badge">v28-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -920,7 +913,7 @@
       <section id="kitchen-view">
         <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
         <div class="kitchen-menu-actions">
-          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
+          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️️ Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
@@ -1097,6 +1090,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=27"></script>
+  <script src="/app.js?v=28"></script>
 </body>
 </html>
