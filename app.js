@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v23 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v26 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v23";
+const CURRENT_APP_VERSION = "v26";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,7 +28,30 @@ try {
 }
 
 // ==========================================================================
-// 2. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET ENGINE
+// 2. SPLASH & VIGNETTE AD TRIGGER ENGINE
+// ==========================================================================
+function executeAppLogin() {
+  const loginBtn = document.getElementById('splash-login-btn');
+  const loaderBox = document.getElementById('splash-loader-box');
+
+  if (loginBtn) loginBtn.style.display = 'none';
+  if (loaderBox) loaderBox.style.display = 'flex';
+
+  // Allow Monetag vignette ad to render upon tap, then smoothly transition into app
+  setTimeout(() => {
+    const splash = document.getElementById('app-splash-screen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        checkAppOnboarding();
+      }, 400);
+    }
+  }, 2400);
+}
+
+// ==========================================================================
+// 3. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET ENGINE
 // ==========================================================================
 function isDuringBreakWindow() {
   const now = new Date();
@@ -60,7 +83,7 @@ function checkDaily6PMReset() {
 }
 
 // ==========================================================================
-// 3. MANDATORY APP ONBOARDING & FAIL-PROOF PUSH ENGINE
+// 4. MANDATORY APP ONBOARDING & FAIL-PROOF PUSH ENGINE
 // ==========================================================================
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -74,6 +97,11 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function checkAppOnboarding() {
+  const splash = document.getElementById('app-splash-screen');
+  if (splash && splash.style.display !== 'none' && !splash.classList.contains('fade-out')) {
+    return; // Wait until user exits splash
+  }
+
   if (isKitchenMode) {
      document.getElementById('profile-modal').style.display = 'none';
      document.getElementById('notification-permission-modal').style.display = 'none';
@@ -344,13 +372,13 @@ async function notifyKitchenNewOrder(orderData) {
 }
 
 // ==========================================================================
-// 4. SERVICE WORKER REGISTRATION
+// 5. SERVICE WORKER REGISTRATION (PATH CONFLICT FIXED)
 // ==========================================================================
 let swRegistration = null;
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`/sw.js?v=${CURRENT_APP_VERSION}`, { scope: '/' })
+    navigator.serviceWorker.register(`sw.js?v=${CURRENT_APP_VERSION}`)
     .then((reg) => {
       swRegistration = reg;
       reg.update();
@@ -377,7 +405,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================================================
-// 5. STANDALONE DETECTION & INSTALLATION ENGINE
+// 6. STANDALONE DETECTION & INSTALLATION ENGINE
 // ==========================================================================
 let deferredInstallPrompt = null;
 
@@ -424,15 +452,11 @@ function enforceInstallGate() {
   if (isStandalonePWA()) {
     if (installGate) installGate.style.setProperty('display', 'none', 'important');
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
-    
-    setTimeout(() => {
-      checkAppOnboarding();
-    }, 500);
   }
 }
 
 // ==========================================================================
-// 6. COMPLETE FOODIES POINT MENU & DYNAMIC MANAGEMENT
+// 7. COMPLETE FOODIES POINT MENU & DYNAMIC MANAGEMENT
 // ==========================================================================
 const DEFAULT_MENU_ITEMS = [
   { id: 'dish-001', category: 'Rolls', name: 'Dahi Bread Roll (1 pc)', price: 15 },
@@ -660,7 +684,7 @@ function saveEditedItem() {
 }
 
 // ==========================================================================
-// 7. KITCHEN DROPDOWN MENU
+// 8. KITCHEN DROPDOWN MENU
 // ==========================================================================
 function toggleKitchenMenuDropdown(forceState) {
   const dropdown = document.getElementById('kitchen-dropdown');
@@ -680,7 +704,7 @@ function toggleKitchenMenuDropdown(forceState) {
 }
 
 // ==========================================================================
-// 8. RENDER KITCHEN MENU
+// 9. RENDER KITCHEN MENU
 // ==========================================================================
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
@@ -769,7 +793,7 @@ function toggleOutOfStock(dishId) {
 }
 
 // ==========================================================================
-// 9. PUBLISH OR CLEAR DAILY LIVE MENU
+// 10. PUBLISH OR CLEAR DAILY LIVE MENU
 // ==========================================================================
 function publishDailyMenu() {
   if (!db) return alert("Database connection is not ready. Please refresh.");
@@ -811,7 +835,7 @@ function clearDailyMenu() {
 }
 
 // ==========================================================================
-// 10. CUSTOMER LIVE MENU LISTENER
+// 11. CUSTOMER LIVE MENU LISTENER
 // ==========================================================================
 function renderCustomerMenuFromSnapshot(activeIds) {
   const container = document.getElementById('customer-menu-container');
@@ -895,7 +919,7 @@ function updateQuantity(dishId, change) {
 }
 
 // ==========================================================================
-// 11. ORDER SUBMISSION ENGINE
+// 12. ORDER SUBMISSION ENGINE
 // ==========================================================================
 let pendingCustomerOrder = null;
 
@@ -1108,7 +1132,7 @@ function listenForCustomerOrderUpdates() {
 }
 
 // ==========================================================================
-// 12. KITCHEN LOGIN & NAVIGATION
+// 13. KITCHEN LOGIN & NAVIGATION
 // ==========================================================================
 const KITCHEN_PIN = "validatefoodies2026";
 let isKitchenMode = false;
@@ -1225,7 +1249,7 @@ function exitKitchenMode(triggerHistoryBack = true) {
 }
 
 // ==========================================================================
-// 13. DEDICATED KITCHEN SUB-PAGES
+// 14. DEDICATED KITCHEN SUB-PAGES
 // ==========================================================================
 function openKitchenOrdersPage() {
   toggleKitchenMenuDropdown(false);
@@ -1387,7 +1411,7 @@ window.addEventListener('popstate', () => {
 });
 
 // ==========================================================================
-// 14. LIVE KITCHEN ORDER LISTENER
+// 15. LIVE KITCHEN ORDER LISTENER
 // ==========================================================================
 function listenForKitchenOrders() {
   if (!db) return;
@@ -1483,7 +1507,7 @@ function listenForKitchenOrders() {
 }
 
 // ==========================================================================
-// 15. TARGETED ORDER ACTIONS
+// 16. TARGETED ORDER ACTIONS
 // ==========================================================================
 let pendingAcceptance = null;
 
@@ -1570,21 +1594,18 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 16. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
+// 17. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
   
-  // Scans for any fixed/absolute elements near the top, regardless of z-index
   document.body.childNodes.forEach(child => {
-    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay') {
+    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('kitchen-dropdown-backdrop') && !child.classList.contains('kitchen-dropdown')) {
       const st = window.getComputedStyle(child);
       const isFixed = (st.position === 'fixed' || st.position === 'absolute');
       
-      // Removed zIndex requirement: ad networks often use "auto"
       if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
         const rect = child.getBoundingClientRect();
-        // Check if element is clamped to the top of the viewport
         if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
           if (rect.bottom > maxBottom) {
             maxBottom = rect.bottom;
@@ -1594,7 +1615,6 @@ function evaluateCumulativeAdHeight() {
     }
   });
 
-  // Monetag sometimes injects directly into the HTML node instead of Body
   document.documentElement.childNodes.forEach(child => {
     if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
       const st = window.getComputedStyle(child);
@@ -1607,7 +1627,6 @@ function evaluateCumulativeAdHeight() {
     }
   });
 
-  // Safely shift the UI, cap at 400px so a broken ad doesn't wipe the screen
   if (maxBottom > 0 && maxBottom < 400) {
     document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
   } else {
@@ -1632,7 +1651,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================================================
-// 17. INITIALIZE APP ON DOM READY
+// 18. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
