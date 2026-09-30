@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v28 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v29 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v28";
+const CURRENT_APP_VERSION = "v29";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,28 +28,60 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & VIGNETTE AD TRIGGER ENGINE
+// 2. SPLASH AUTH, DYNAMIC AD INJECTION & AUTO-CLOSE ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
 
-  // Immediately hide button and show loader. 
-  // Monetag will simultaneously intercept this click and throw the Vignette overlay.
+  // 1. Swap button for the loading ring immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // 3.5 sec delay gives user time to close the ad, see the loader momentarily, and enter the app
+  // 2. Dynamically inject the Monetag Vignette so it strictly triggers NOW
+  const s = document.createElement('script');
+  s.dataset.zone = '11928230';
+  s.src = 'https://n6wxm.com/vignette.min.js';
+  document.body.appendChild(s);
+
+  // 3. Wait 4.5 seconds for the impression, then silently assassinate the ad
   setTimeout(() => {
+    const safeIds = [
+      'app-root', 'install-gate-overlay', 'app-splash-screen', 'kitchen-dropdown', 
+      'kitchen-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+      'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+      'notification-permission-modal', 'pin-modal'
+    ];
+
+    // Aggressively hide any external DOM nodes Monetag attached to the body
+    document.body.childNodes.forEach(child => {
+      if (child.nodeType === 1 && !safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+        child.style.setProperty('opacity', '0', 'important');
+        child.style.setProperty('pointer-events', 'none', 'important');
+        child.style.setProperty('z-index', '-9999', 'important');
+        setTimeout(() => { child.style.setProperty('display', 'none', 'important'); }, 300);
+      }
+    });
+
+    document.documentElement.childNodes.forEach(child => {
+      if (child.nodeType === 1 && child.tagName !== 'BODY' && child.tagName !== 'HEAD') {
+        child.style.setProperty('opacity', '0', 'important');
+        child.style.setProperty('pointer-events', 'none', 'important');
+        child.style.setProperty('z-index', '-9999', 'important');
+        setTimeout(() => { child.style.setProperty('display', 'none', 'important'); }, 300);
+      }
+    });
+
+    // 4. Fade out the splash screen and seamlessly enter the app
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
-        checkAppOnboarding(); // Evaluate profile & notifications ONLY after entering app
+        checkAppOnboarding();
       }, 400);
     }
-  }, 3500);
+  }, 4500);
 }
 
 // ==========================================================================
@@ -101,7 +133,7 @@ function urlBase64ToUint8Array(base64String) {
 function checkAppOnboarding() {
   const splash = document.getElementById('app-splash-screen');
   if (splash && splash.style.display !== 'none' && !splash.classList.contains('fade-out')) {
-    return; // Wait until user fully exits splash screen
+    return; // Wait until user exits splash screen
   }
 
   if (isKitchenMode) {
@@ -457,18 +489,8 @@ function enforceInstallGate() {
     if (installGate) installGate.style.setProperty('display', 'none', 'important');
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
     
-    // Show the interactive Splash Screen
+    // Show the interactive Splash Screen (Login Button triggers ad via executeAppLogin)
     if (splashScreen) splashScreen.style.display = 'flex';
-
-    // DYNAMIC VIGNETTE INJECTION:
-    // Guarantees it ONLY loads after installation and never triggers on the install screen
-    if (!document.getElementById('monetag-vignette')) {
-      const s = document.createElement('script');
-      s.id = 'monetag-vignette';
-      s.dataset.zone = '11928230';
-      s.src = 'https://n6wxm.com/vignette.min.js';
-      document.head.appendChild(s);
-    }
   } else {
     // If not installed, ensure Splash is completely hidden so they can click Install
     if (splashScreen) splashScreen.style.display = 'none';
