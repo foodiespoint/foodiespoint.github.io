@@ -13,13 +13,14 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="manifest.json?v=26">
+  <!-- Root absolute paths restored for root repo -->
+  <link rel="manifest" href="/manifest.json?v=27">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Foodies Point">
-  <link rel="apple-touch-icon" href="icon.png">
-  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="icon" type="image/png" href="/icon.png">
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -836,14 +837,11 @@
 </head>
 <body>
 
-  <!-- MONETAG IN-PAGE PUSH SCRIPT (BETA ZONE) -->
-  <script>(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
   <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
     <div class="splash-content">
       <div class="splash-logo-wrapper">
-        <img src="icon.png" alt="Foodies Point Logo" class="splash-logo">
+        <img src="/icon.png" alt="Foodies Point Logo" class="splash-logo">
       </div>
       <h1 class="splash-title">Foodies Point</h1>
       <p class="splash-tagline">Delicious Food, Made Fresh.</p>
@@ -889,7 +887,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v26-Beta</span>
+          <span id="kitchen-version-badge">v27-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -1099,6 +1097,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=26"></script>
+  <script src="/app.js?v=27"></script>
 </body>
 </html>
