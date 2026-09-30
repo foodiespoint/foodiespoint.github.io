@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- MONETAG VIGNETTE BANNER SCRIPT -->
+  <script>(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
@@ -10,13 +13,13 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=23">
+  <link rel="manifest" href="manifest.json?v=26">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Foodies Point">
-  <link rel="apple-touch-icon" href="/icon.png">
-  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -49,7 +52,118 @@
       background-color: var(--bg-light);
     }
 
-    /* COMPLETE WINDOW RIGID WRAPPER (Fixed so it translates cleanly) */
+    /* SPLASH / LANDING SCREEN */
+    #app-splash-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--white);
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    #app-splash-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .splash-logo-wrapper {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      box-shadow: 0 12px 32px rgba(217, 83, 79, 0.22);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFF;
+      overflow: hidden;
+    }
+
+    .splash-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .splash-title {
+      color: var(--primary-color);
+      font-size: 1.95rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .splash-tagline {
+      color: #666;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 36px;
+    }
+
+    .splash-btn {
+      width: 100%;
+      max-width: 240px;
+      background: var(--primary-color);
+      color: var(--white);
+      border: none;
+      padding: 14px 24px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(217, 83, 79, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .splash-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* LOADING CONTAINER INSIDE SPLASH */
+    .splash-loading-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .splash-loader {
+      width: 38px;
+      height: 38px;
+      border: 4px solid #F0F0F0;
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: splashSpin 0.85s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+    }
+
+    .splash-loading-text {
+      color: #777;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    @keyframes splashSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* COMPLETE WINDOW RIGID WRAPPER */
     #app-root {
       position: fixed;
       top: 0;
@@ -199,7 +313,6 @@
       font-weight: 700;
     }
 
-    /* Restored Absolute Anchors: Enforces the clean 50/50 flex split */
     #customer-view {
       display: flex;
       position: absolute;
@@ -605,8 +718,8 @@
     
     .kitchen-dropdown {
       display: none;
-      position: absolute;
-      top: 60px;
+      position: fixed;
+      top: calc(60px + var(--ad-offset));
       right: 16px;
       background: var(--white);
       border: 1px solid var(--border-color);
@@ -615,6 +728,7 @@
       z-index: 2600;
       min-width: 190px;
       overflow: hidden;
+      transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
     .kitchen-dropdown .dropdown-item {
@@ -650,6 +764,8 @@
       z-index: 3000;
       justify-content: center;
       align-items: center;
+      padding-top: var(--ad-offset);
+      transition: padding-top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .modal-card {
@@ -720,8 +836,28 @@
 </head>
 <body>
 
-  <!-- MONETAG IN-PAGE PUSH SCRIPT -->
+  <!-- MONETAG IN-PAGE PUSH SCRIPT (BETA ZONE) -->
   <script>(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+  <!-- APP LANDING / SPLASH SCREEN -->
+  <div id="app-splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo-wrapper">
+        <img src="icon.png" alt="Foodies Point Logo" class="splash-logo">
+      </div>
+      <h1 class="splash-title">Foodies Point</h1>
+      <p class="splash-tagline">Delicious Food, Made Fresh.</p>
+      
+      <button id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
+        Login & Enter
+      </button>
+
+      <div id="splash-loader-box" class="splash-loading-box">
+        <div class="splash-loader"></div>
+        <span class="splash-loading-text">Connecting to kitchen...</span>
+      </div>
+    </div>
+  </div>
 
   <!-- IRREMOVABLE INSTALL GATE OVERLAY -->
   <div id="install-gate-overlay">
@@ -753,7 +889,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v23-Beta</span>
+          <span id="kitchen-version-badge">v26-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -824,16 +960,16 @@
         </div>
       </section>
 
-      <div id="kitchen-dropdown" class="kitchen-dropdown">
-        <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
-        <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
-        <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
-      </div>
-
     </div> <!-- End main-app-content -->
   </div> <!-- End app-root -->
 
+  <!-- DROPDOWN & BACKDROP EXTRACTED OUTSIDE APP-ROOT -->
   <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
+  <div id="kitchen-dropdown" class="kitchen-dropdown">
+    <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
+    <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
+    <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
+  </div>
 
   <!-- MODALS -->
   <div class="modal-overlay" id="add-item-modal">
@@ -963,7 +1099,6 @@
     </div>
   </div>
 
-  <!-- Force fetch Beta v23 -->
-  <script src="/app.js?v=23"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>
