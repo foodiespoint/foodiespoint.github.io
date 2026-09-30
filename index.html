@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=28">
+  <link rel="manifest" href="/manifest.json?v=29">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -49,7 +49,7 @@
 
     /* SPLASH / LANDING SCREEN */
     #app-splash-screen {
-      display: none; /* Hidden by default, injected by enforceInstallGate */
+      display: none; 
       position: fixed;
       inset: 0;
       background: var(--white);
@@ -161,12 +161,13 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* COMPLETE WINDOW RIGID WRAPPER */
+    /* CLEAN APP ROOT CONTAINER (NO AD-SHIFTING OR TRANSFORMS) */
     #app-root {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
+      bottom: 0;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -829,7 +830,7 @@
 </head>
 <body>
 
-  <!-- APP LANDING / SPLASH SCREEN (Now securely hidden behind the Install Gate until installed) -->
+  <!-- APP LANDING / SPLASH SCREEN (Securely hidden until app is installed) -->
   <div id="app-splash-screen">
     <div class="splash-content">
       <div class="splash-logo-wrapper">
@@ -838,7 +839,6 @@
       <h1 class="splash-title">Foodies Point</h1>
       <p class="splash-tagline">Delicious Food, Made Fresh.</p>
       
-      <!-- Anchor link trigger designed specifically for Vignette interception -->
       <a href="javascript:void(0)" id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
         Login & Enter
       </a>
@@ -880,7 +880,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v28-Beta</span>
+          <span id="kitchen-version-badge">v29-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -913,7 +913,7 @@
       <section id="kitchen-view">
         <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
         <div class="kitchen-menu-actions">
-          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️️ Clear</button>
+          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
@@ -954,7 +954,6 @@
     </div> <!-- End main-app-content -->
   </div> <!-- End app-root -->
 
-  <!-- DROPDOWN & BACKDROP EXTRACTED OUTSIDE APP-ROOT -->
   <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
   <div id="kitchen-dropdown" class="kitchen-dropdown">
     <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
@@ -1090,6 +1089,7 @@
     </div>
   </div>
 
-  <script src="/app.js?v=28"></script>
+  <!-- Absolute path to script -->
+  <script src="/app.js?v=29"></script>
 </body>
 </html>
