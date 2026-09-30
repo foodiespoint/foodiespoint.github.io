@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=30">
+  <link rel="manifest" href="/manifest.json?v=31">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -66,7 +66,7 @@
     /* TITLE / LOADER SWAP AREA AT THE TOP */
     .splash-top-area {
       position: absolute;
-      top: 18%;
+      top: 28%; /* Shifted down from 18% */
       left: 0;
       width: 100%;
       display: flex;
@@ -116,29 +116,30 @@
       transform: translate(-50%, -50%) scale(0.97); /* Must preserve translate */
     }
 
-    /* SIDE-BY-SIDE LOADING SPINNER IN TOP AREA */
+    /* VERTICALLY STACKED LOADING SPINNER IN TOP AREA */
     .splash-loading-box {
       display: none; /* Flex applied via JS */
-      flex-direction: row;
+      flex-direction: column; /* Stacked */
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 16px;
+      margin-top: 10px;
     }
 
     .splash-loader {
-      width: 24px;
-      height: 24px;
-      border: 3px solid #F0F0F0;
+      width: 48px;
+      height: 48px;
+      border: 4px solid #F0F0F0;
       border-top-color: var(--primary-color);
       border-radius: 50%;
       animation: splashSpin 0.85s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
     }
 
     .splash-loading-text {
-      color: #555;
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: 0.2px;
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
     }
 
     @keyframes splashSpin {
@@ -815,20 +816,20 @@
 </head>
 <body>
 
-  <!-- APP LANDING / SPLASH SCREEN -->
+  <!-- APP LANDING / SPLASH SCREEN (Securely hidden until app is installed) -->
   <div id="app-splash-screen">
     
-    <!-- TOP AREA: Swaps Title for Loading Row -->
+    <!-- TOP AREA: Swaps Title for Loading Stack -->
     <div class="splash-top-area">
       <div id="splash-header-text">
         <h1 class="splash-title">Foodies Point</h1>
         <p class="splash-tagline">Delicious Food, Made Fresh.</p>
       </div>
 
-      <!-- Loader (Side-by-side) -->
+      <!-- Loader (Stacked layout: Text on top, spinner below) -->
       <div id="splash-loader-box" class="splash-loading-box">
-        <div class="splash-loader"></div>
         <span class="splash-loading-text">Connecting to kitchen...</span>
+        <div class="splash-loader"></div>
       </div>
     </div>
 
@@ -869,7 +870,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v30-Beta</span>
+          <span id="kitchen-version-badge">v31-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -1079,6 +1080,7 @@
     </div>
   </div>
 
-  <script src="/app.js?v=30"></script>
+  <!-- Absolute path to script -->
+  <script src="/app.js?v=31"></script>
 </body>
 </html>
