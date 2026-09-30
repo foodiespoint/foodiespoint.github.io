@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v29 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v30 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v29";
+const CURRENT_APP_VERSION = "v30";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -33,9 +33,11 @@ try {
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
+  const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap button for the loading ring immediately
+  // 1. Swap button/title for the side-by-side loading ring immediately
   if (loginBtn) loginBtn.style.display = 'none';
+  if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
   // 2. Dynamically inject the Monetag Vignette so it strictly triggers NOW
@@ -490,7 +492,7 @@ function enforceInstallGate() {
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
     
     // Show the interactive Splash Screen (Login Button triggers ad via executeAppLogin)
-    if (splashScreen) splashScreen.style.display = 'flex';
+    if (splashScreen) splashScreen.style.display = 'block';
   } else {
     // If not installed, ensure Splash is completely hidden so they can click Install
     if (splashScreen) splashScreen.style.display = 'none';
