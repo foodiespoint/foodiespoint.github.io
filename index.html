@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=29">
+  <link rel="manifest" href="/manifest.json?v=30">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -54,11 +54,6 @@
       inset: 0;
       background: var(--white);
       z-index: 100000;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 24px;
       transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
@@ -68,36 +63,22 @@
       pointer-events: none;
     }
 
-    .splash-content {
+    /* TITLE / LOADER SWAP AREA AT THE TOP */
+    .splash-top-area {
+      position: absolute;
+      top: 18%;
+      left: 0;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 100%;
-      max-width: 320px;
-    }
-
-    .splash-logo-wrapper {
-      width: 120px;
-      height: 120px;
-      border-radius: 28px;
-      box-shadow: 0 12px 32px rgba(217, 83, 79, 0.22);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #FFF;
-      overflow: hidden;
-    }
-
-    .splash-logo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      text-align: center;
+      padding: 0 20px;
     }
 
     .splash-title {
       color: var(--primary-color);
-      font-size: 1.95rem;
+      font-size: 2.2rem;
       font-weight: 800;
       letter-spacing: -0.5px;
       margin-bottom: 6px;
@@ -107,11 +88,14 @@
       color: #666;
       font-size: 0.95rem;
       font-weight: 500;
-      margin-bottom: 36px;
     }
 
+    /* ABSOLUTE CENTERED LOGIN BUTTON */
     .splash-btn {
-      display: inline-block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: 100%;
       max-width: 240px;
       background: var(--primary-color);
@@ -123,36 +107,37 @@
       border-radius: 30px;
       cursor: pointer;
       text-decoration: none;
-      box-sizing: border-box;
+      text-align: center;
       box-shadow: 0 6px 18px rgba(217, 83, 79, 0.35);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .splash-btn:active {
-      transform: scale(0.97);
+      transform: translate(-50%, -50%) scale(0.97); /* Must preserve translate */
     }
 
-    /* LOADING CONTAINER INSIDE SPLASH */
+    /* SIDE-BY-SIDE LOADING SPINNER IN TOP AREA */
     .splash-loading-box {
-      display: none;
-      flex-direction: column;
+      display: none; /* Flex applied via JS */
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
       gap: 12px;
     }
 
     .splash-loader {
-      width: 38px;
-      height: 38px;
-      border: 4px solid #F0F0F0;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #F0F0F0;
       border-top-color: var(--primary-color);
       border-radius: 50%;
       animation: splashSpin 0.85s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
     }
 
     .splash-loading-text {
-      color: #777;
-      font-size: 0.9rem;
-      font-weight: 600;
+      color: #555;
+      font-size: 1.05rem;
+      font-weight: 700;
       letter-spacing: 0.2px;
     }
 
@@ -830,24 +815,28 @@
 </head>
 <body>
 
-  <!-- APP LANDING / SPLASH SCREEN (Securely hidden until app is installed) -->
+  <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
-    <div class="splash-content">
-      <div class="splash-logo-wrapper">
-        <img src="/icon.png" alt="Foodies Point Logo" class="splash-logo">
+    
+    <!-- TOP AREA: Swaps Title for Loading Row -->
+    <div class="splash-top-area">
+      <div id="splash-header-text">
+        <h1 class="splash-title">Foodies Point</h1>
+        <p class="splash-tagline">Delicious Food, Made Fresh.</p>
       </div>
-      <h1 class="splash-title">Foodies Point</h1>
-      <p class="splash-tagline">Delicious Food, Made Fresh.</p>
-      
-      <a href="javascript:void(0)" id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
-        Login & Enter
-      </a>
 
+      <!-- Loader (Side-by-side) -->
       <div id="splash-loader-box" class="splash-loading-box">
         <div class="splash-loader"></div>
         <span class="splash-loading-text">Connecting to kitchen...</span>
       </div>
     </div>
+
+    <!-- ABSOLUTE CENTERED BUTTON -->
+    <a href="javascript:void(0)" id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
+      Login & Enter
+    </a>
+
   </div>
 
   <!-- IRREMOVABLE INSTALL GATE OVERLAY -->
@@ -880,7 +869,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v29-Beta</span>
+          <span id="kitchen-version-badge">v30-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -954,6 +943,7 @@
     </div> <!-- End main-app-content -->
   </div> <!-- End app-root -->
 
+  <!-- DROPDOWN & BACKDROP -->
   <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
   <div id="kitchen-dropdown" class="kitchen-dropdown">
     <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
@@ -1089,7 +1079,6 @@
     </div>
   </div>
 
-  <!-- Absolute path to script -->
-  <script src="/app.js?v=29"></script>
+  <script src="/app.js?v=30"></script>
 </body>
 </html>
