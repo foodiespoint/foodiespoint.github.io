@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v31 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v32 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v31";
+const CURRENT_APP_VERSION = "v32";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,7 +28,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, DYNAMIC AD INJECTION & AUTO-CLOSE ENGINE
+// 2. SPLASH AUTH, SEQUENTIAL AD INJECTION & AUTO-CLOSE ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -81,6 +81,16 @@ function executeAppLogin() {
       setTimeout(() => {
         splash.style.display = 'none';
         checkAppOnboarding();
+
+        // 5. INJECT IN-PAGE PUSH NOW (Only triggers once upon logging in)
+        if (!document.getElementById('monetag-inpage-beta')) {
+          const pushScript = document.createElement('script');
+          pushScript.id = 'monetag-inpage-beta';
+          pushScript.dataset.zone = '11879957';
+          pushScript.src = 'https://nap5k.com/tag.min.js';
+          document.body.appendChild(pushScript);
+        }
+
       }, 400);
     }
   }, 4500);
@@ -804,7 +814,7 @@ function renderKitchenMenu() {
               <div class="price">₹${dish.price}</div>
             </div>
           </div>
-          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏️ Edit</button>
+          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏️️ Edit</button>
         `;
         container.appendChild(card);
       });
@@ -1634,7 +1644,64 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. INITIALIZE APP ON DOM READY
+// 17. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
+// ==========================================================================
+function evaluateCumulativeAdHeight() {
+  let maxBottom = 0;
+  
+  document.body.childNodes.forEach(child => {
+    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('kitchen-dropdown-backdrop') && !child.classList.contains('kitchen-dropdown')) {
+      const st = window.getComputedStyle(child);
+      const isFixed = (st.position === 'fixed' || st.position === 'absolute');
+      
+      if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
+        const rect = child.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
+          if (rect.bottom > maxBottom) {
+            maxBottom = rect.bottom;
+          }
+        }
+      }
+    }
+  });
+
+  document.documentElement.childNodes.forEach(child => {
+    if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
+      const st = window.getComputedStyle(child);
+      if (st.position === 'fixed' || st.position === 'absolute') {
+        const rect = child.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
+          if (rect.bottom > maxBottom) maxBottom = rect.bottom;
+        }
+      }
+    }
+  });
+
+  if (maxBottom > 0 && maxBottom < 400) {
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
+  } else {
+    document.documentElement.style.setProperty('--ad-offset', '0px');
+  }
+}
+
+const adObserver = new MutationObserver(() => {
+  evaluateCumulativeAdHeight();
+});
+
+setInterval(evaluateCumulativeAdHeight, 400);
+
+document.addEventListener("DOMContentLoaded", () => {
+  adObserver.observe(document.body, { 
+    childList: true, 
+    subtree: true, 
+    attributes: true, 
+    attributeFilter: ['style', 'class'] 
+  });
+  evaluateCumulativeAdHeight();
+});
+
+// ==========================================================================
+// 18. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
