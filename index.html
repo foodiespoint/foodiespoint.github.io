@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=35">
+  <link rel="manifest" href="/manifest.json?v=36">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -28,6 +28,8 @@
       --bg-light: #F8F9FA;
       --white: #FFFFFF;
       --border-color: #EAEAEA;
+      
+      --ad-offset: 0px; 
     }
 
     * {
@@ -147,15 +149,16 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* CLEAN APP ROOT CONTAINER */
+    /* COMPLETE WINDOW RIGID WRAPPER WITH AD OFFSET RESTORED */
     #app-root {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      height: 100vh;
-      height: 100dvh;
+      height: calc(100vh - var(--ad-offset));
+      height: calc(100dvh - var(--ad-offset));
+      transform: translateY(var(--ad-offset));
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
       overflow: hidden;
       display: block;
     }
@@ -702,7 +705,7 @@
     .kitchen-dropdown {
       display: none;
       position: fixed;
-      top: 60px;
+      top: calc(60px + var(--ad-offset));
       right: 16px;
       background: var(--white);
       border: 1px solid var(--border-color);
@@ -711,6 +714,7 @@
       z-index: 2600;
       min-width: 190px;
       overflow: hidden;
+      transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
     .kitchen-dropdown .dropdown-item {
@@ -746,6 +750,8 @@
       z-index: 3000;
       justify-content: center;
       align-items: center;
+      padding-top: var(--ad-offset);
+      transition: padding-top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .modal-card {
@@ -870,7 +876,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v35-Beta</span>
+          <span id="kitchen-version-badge">v36-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -1080,6 +1086,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=35"></script>
+  <script src="/app.js?v=36"></script>
 </body>
 </html>
