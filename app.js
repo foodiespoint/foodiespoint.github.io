@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v35 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v36 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v35";
+const CURRENT_APP_VERSION = "v36";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,7 +28,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & SIMPLE SEQUENTIAL AD INJECTION ENGINE
+// 2. SPLASH AUTH, SURGICAL AD ASSASSIN & IN-PAGE PUSH ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -46,8 +46,25 @@ function executeAppLogin() {
   vScript.src = 'https://n6wxm.com/vignette.min.js';
   document.body.appendChild(vScript);
 
-  // 3. Wait 4.5s for "connecting" phase, then enter app
+  // 3. Wait 4.5s for valid impression, then SURGICALLY kill ONLY the Vignette
   setTimeout(() => {
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+    
+    // Target only full-screen ad overlays (Height > 60% of screen)
+    document.querySelectorAll('div, iframe').forEach(node => {
+      const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
+      if (!node.closest('#app-root') && !safeIds.includes(node.id)) {
+        const rect = node.getBoundingClientRect();
+        if (rect.height > (windowHeight * 0.6) && rect.width > (windowWidth * 0.6)) {
+          node.style.setProperty('display', 'none', 'important');
+          node.style.setProperty('opacity', '0', 'important');
+          node.style.setProperty('pointer-events', 'none', 'important');
+        }
+      }
+    });
+
+    // 4. Fade out splash screen
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
@@ -55,12 +72,11 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // 4. Simple, clean injection of the In-Page Push ad after login
+        // 5. INJECT IN-PAGE PUSH EXACTLY AS USER PROVIDED (After App Open)
         if (!document.getElementById('monetag-inpage-beta')) {
           const pushScript = document.createElement('script');
           pushScript.id = 'monetag-inpage-beta';
-          pushScript.dataset.zone = '11879957';
-          pushScript.src = 'https://nap5k.com/tag.min.js';
+          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
           document.body.appendChild(pushScript);
         }
 
@@ -1183,7 +1199,7 @@ function togglePasscodeVisibility() {
     if (eyeBtn) eyeBtn.textContent = '🔒';
   } else {
     input.type = 'password';
-    if (eyeBtn) eyeBtn.textContent = '👁️️';
+    if (eyeBtn) eyeBtn.textContent = '👁️';
   }
 }
 
@@ -1395,7 +1411,7 @@ function fetchAndRenderPaymentLedger() {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
         <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️ Clear Entries</button>
+        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
       </div>
     `;
 
@@ -1507,7 +1523,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1617,7 +1633,60 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. INITIALIZE APP ON DOM READY
+// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE
+// ==========================================================================
+function evaluateCumulativeAdHeight() {
+  let maxBottom = 0;
+  const windowHeight = window.innerHeight;
+  
+  // Recursively scan deep to find dynamically injected fixed/absolute banners
+  const elements = document.querySelectorAll('div, iframe');
+  
+  for (let i = 0; i < elements.length; i++) {
+     const el = elements[i];
+     
+     // Skip elements inside our known app containers
+     if (el.closest('#app-root') || el.closest('#install-gate-overlay') || el.closest('#app-splash-screen')) continue;
+     
+     const st = window.getComputedStyle(el);
+     if (st.position === 'fixed' || st.position === 'absolute') {
+         if (st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
+             const rect = el.getBoundingClientRect();
+             // Look for banners that are NOT full screen, but sit at the top of the viewport
+             if (rect.height > 10 && rect.height < (windowHeight * 0.5) && rect.top >= 0 && rect.top <= 100) {
+                 if (rect.bottom > maxBottom) {
+                     maxBottom = rect.bottom;
+                 }
+             }
+         }
+     }
+  }
+
+  if (maxBottom > 0 && maxBottom < 400) {
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 2)}px`);
+  } else {
+    document.documentElement.style.setProperty('--ad-offset', '0px');
+  }
+}
+
+const adObserver = new MutationObserver(() => {
+  evaluateCumulativeAdHeight();
+});
+
+setInterval(evaluateCumulativeAdHeight, 400);
+
+document.addEventListener("DOMContentLoaded", () => {
+  adObserver.observe(document.body, { 
+    childList: true, 
+    subtree: true, 
+    attributes: true, 
+    attributeFilter: ['style', 'class'] 
+  });
+  evaluateCumulativeAdHeight();
+});
+
+// ==========================================================================
+// 18. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
