@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v32 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v33 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v32";
+const CURRENT_APP_VERSION = "v33";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,53 +28,60 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, SEQUENTIAL AD INJECTION & AUTO-CLOSE ENGINE
+// 2. SURGICAL AD ASSASSIN & SEQUENTIAL INJECTION ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap button/title for the prominent stacked loading state immediately
+  // 1. Swap UI to loading state
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // 2. Dynamically inject the Monetag Vignette so it strictly triggers NOW
+  // 2. SURGICAL TRACKER: Watch the DOM to capture ONLY the Vignette nodes
+  const safeIds = [
+    'app-root', 'install-gate-overlay', 'app-splash-screen', 'kitchen-dropdown', 
+    'kitchen-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+    'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+    'notification-permission-modal', 'pin-modal'
+  ];
+  
+  let vignetteNodes = [];
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(m => {
+      m.addedNodes.forEach(node => {
+        if (node.nodeType === 1 && !safeIds.includes(node.id) && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+          vignetteNodes.push(node);
+        }
+      });
+    });
+  });
+  
+  observer.observe(document.body, { childList: true });
+  observer.observe(document.documentElement, { childList: true });
+
+  // 3. Inject Vignette
   const s = document.createElement('script');
   s.dataset.zone = '11928230';
   s.src = 'https://n6wxm.com/vignette.min.js';
   document.body.appendChild(s);
 
-  // 3. Wait 4.5 seconds for the impression, then silently assassinate the ad
+  // 4. Wait 4.5 seconds for impression, then eliminate ONLY the Vignette nodes
   setTimeout(() => {
-    const safeIds = [
-      'app-root', 'install-gate-overlay', 'app-splash-screen', 'kitchen-dropdown', 
-      'kitchen-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
-      'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
-      'notification-permission-modal', 'pin-modal'
-    ];
+    observer.disconnect(); // Stop tracking before we inject the second ad!
 
-    // Aggressively hide any external DOM nodes Monetag attached to the body
-    document.body.childNodes.forEach(child => {
-      if (child.nodeType === 1 && !safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-        child.style.setProperty('opacity', '0', 'important');
-        child.style.setProperty('pointer-events', 'none', 'important');
-        child.style.setProperty('z-index', '-9999', 'important');
-        setTimeout(() => { child.style.setProperty('display', 'none', 'important'); }, 300);
+    vignetteNodes.forEach(node => {
+      if (node.style) {
+        node.style.setProperty('opacity', '0', 'important');
+        node.style.setProperty('pointer-events', 'none', 'important');
+        node.style.setProperty('z-index', '-9999', 'important');
+        setTimeout(() => { node.style.setProperty('display', 'none', 'important'); }, 300);
       }
     });
 
-    document.documentElement.childNodes.forEach(child => {
-      if (child.nodeType === 1 && child.tagName !== 'BODY' && child.tagName !== 'HEAD') {
-        child.style.setProperty('opacity', '0', 'important');
-        child.style.setProperty('pointer-events', 'none', 'important');
-        child.style.setProperty('z-index', '-9999', 'important');
-        setTimeout(() => { child.style.setProperty('display', 'none', 'important'); }, 300);
-      }
-    });
-
-    // 4. Fade out the splash screen and seamlessly enter the app
+    // 5. Fade out splash screen
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
@@ -82,13 +89,12 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
 
-        // 5. INJECT IN-PAGE PUSH NOW (Only triggers once upon logging in)
+        // 6. INJECT IN-PAGE PUSH NOW (using exact IIFE execution)
         if (!document.getElementById('monetag-inpage-beta')) {
-          const pushScript = document.createElement('script');
-          pushScript.id = 'monetag-inpage-beta';
-          pushScript.dataset.zone = '11879957';
-          pushScript.src = 'https://nap5k.com/tag.min.js';
-          document.body.appendChild(pushScript);
+          const inlineScript = document.createElement('script');
+          inlineScript.id = 'monetag-inpage-beta';
+          inlineScript.textContent = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+          document.body.appendChild(inlineScript);
         }
 
       }, 400);
@@ -814,7 +820,7 @@ function renderKitchenMenu() {
               <div class="price">₹${dish.price}</div>
             </div>
           </div>
-          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏️️ Edit</button>
+          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
         `;
         container.appendChild(card);
       });
@@ -1422,7 +1428,7 @@ function fetchAndRenderPaymentLedger() {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
         <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️ Clear Entries</button>
+        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
       </div>
     `;
 
