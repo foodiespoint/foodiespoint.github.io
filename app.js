@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v34 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v35 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v34";
+const CURRENT_APP_VERSION = "v35";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,7 +28,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, SURGICAL AD ASSASSIN & SEQUENTIAL INJECTION ENGINE
+// 2. SPLASH AUTH & SIMPLE SEQUENTIAL AD INJECTION ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -40,27 +40,14 @@ function executeAppLogin() {
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // 2. Inject Vignette Script
+  // 2. Inject Vignette Script dynamically
   const vScript = document.createElement('script');
   vScript.dataset.zone = '11928230';
   vScript.src = 'https://n6wxm.com/vignette.min.js';
   document.body.appendChild(vScript);
 
-  // 3. Wait 4.5s for valid impression, then SURGICALLY kill ONLY the Vignette
+  // 3. Wait 4.5s for "connecting" phase, then enter app
   setTimeout(() => {
-    // Hide large ad iframes and high z-index background overlays safely
-    document.querySelectorAll('iframe').forEach(iframe => {
-      iframe.style.setProperty('display', 'none', 'important');
-    });
-    
-    document.querySelectorAll('div').forEach(div => {
-      const z = window.getComputedStyle(div).zIndex;
-      if (z !== 'auto' && parseInt(z) >= 90000 && div.id !== 'app-splash-screen' && div.id !== 'install-gate-overlay') {
-        div.style.setProperty('display', 'none', 'important');
-      }
-    });
-
-    // 4. Fade out splash screen
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
@@ -68,11 +55,12 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // 5. INJECT IN-PAGE PUSH EXACTLY AS USER PROVIDED (After App Open)
+        // 4. Simple, clean injection of the In-Page Push ad after login
         if (!document.getElementById('monetag-inpage-beta')) {
           const pushScript = document.createElement('script');
           pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+          pushScript.dataset.zone = '11879957';
+          pushScript.src = 'https://nap5k.com/tag.min.js';
           document.body.appendChild(pushScript);
         }
 
@@ -799,7 +787,7 @@ function renderKitchenMenu() {
               <div class="price">₹${dish.price}</div>
             </div>
           </div>
-          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏️ Edit</button>
+          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
         `;
         container.appendChild(card);
       });
@@ -1195,7 +1183,7 @@ function togglePasscodeVisibility() {
     if (eyeBtn) eyeBtn.textContent = '🔒';
   } else {
     input.type = 'password';
-    if (eyeBtn) eyeBtn.textContent = '👁️';
+    if (eyeBtn) eyeBtn.textContent = '👁️️';
   }
 }
 
@@ -1629,64 +1617,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
-// ==========================================================================
-function evaluateCumulativeAdHeight() {
-  let maxBottom = 0;
-  
-  document.body.childNodes.forEach(child => {
-    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('kitchen-dropdown-backdrop') && !child.classList.contains('kitchen-dropdown')) {
-      const st = window.getComputedStyle(child);
-      const isFixed = (st.position === 'fixed' || st.position === 'absolute');
-      
-      if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
-        const rect = child.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
-          if (rect.bottom > maxBottom) {
-            maxBottom = rect.bottom;
-          }
-        }
-      }
-    }
-  });
-
-  document.documentElement.childNodes.forEach(child => {
-    if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
-      const st = window.getComputedStyle(child);
-      if (st.position === 'fixed' || st.position === 'absolute') {
-        const rect = child.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
-          if (rect.bottom > maxBottom) maxBottom = rect.bottom;
-        }
-      }
-    }
-  });
-
-  if (maxBottom > 0 && maxBottom < 400) {
-    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
-  } else {
-    document.documentElement.style.setProperty('--ad-offset', '0px');
-  }
-}
-
-const adObserver = new MutationObserver(() => {
-  evaluateCumulativeAdHeight();
-});
-
-setInterval(evaluateCumulativeAdHeight, 400);
-
-document.addEventListener("DOMContentLoaded", () => {
-  adObserver.observe(document.body, { 
-    childList: true, 
-    subtree: true, 
-    attributes: true, 
-    attributeFilter: ['style', 'class'] 
-  });
-  evaluateCumulativeAdHeight();
-});
-
-// ==========================================================================
-// 18. INITIALIZE APP ON DOM READY
+// 17. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
