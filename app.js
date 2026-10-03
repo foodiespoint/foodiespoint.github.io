@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v37 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v38 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v37";
+const CURRENT_APP_VERSION = "v38";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,39 +28,40 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, SMART AD TRACKER & SEQUENTIAL INJECTION ENGINE
+// 2. SPLASH AUTH, SURGICAL AD ASSASSIN & IN-PAGE PUSH ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap UI to stacked loading state
+  // 1. Swap UI to stacked loading state (Monetag's pre-loaded vignette will intercept this tap natively)
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  let adPopped = false;
-  let appRevealed = false;
+  // 2. Wait exactly 4 seconds for a guaranteed impression, then ASSASSINATE the Vignette wrapper safely
+  setTimeout(() => {
+    const safeIds = [
+      'app-root', 'install-gate-overlay', 'app-splash-screen', 'kitchen-dropdown', 
+      'kitchen-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+      'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+      'notification-permission-modal', 'pin-modal'
+    ];
 
-  const enterApp = () => {
-    if (appRevealed) return;
-    appRevealed = true;
-
-    // Surgically kill the Vignette ad overlays
-    document.querySelectorAll('div, iframe').forEach(node => {
-      const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'splash-loader-box'];
-      if (!node.closest('#app-root') && !safeIds.includes(node.id)) {
-        const st = window.getComputedStyle(node);
-        if ((st.position === 'fixed' || st.position === 'absolute') && st.zIndex !== 'auto' && parseInt(st.zIndex) > 10000) {
-          node.style.setProperty('display', 'none', 'important');
-          node.style.setProperty('opacity', '0', 'important');
-          node.style.setProperty('pointer-events', 'none', 'important');
+    // Hide any massive overlays (Vignette wrapper) appended to the body
+    Array.from(document.body.children).forEach(child => {
+      if (child.tagName === 'DIV' && !safeIds.includes(child.id)) {
+        const st = window.getComputedStyle(child);
+        if (st.position === 'fixed' || st.position === 'absolute') {
+          child.style.setProperty('display', 'none', 'important');
+          child.style.setProperty('opacity', '0', 'important');
+          child.style.setProperty('pointer-events', 'none', 'important');
         }
       }
     });
 
-    // Fade out splash screen and reveal app
+    // 3. Fade out splash screen
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
@@ -68,53 +69,18 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN
+        // 4. INJECT IN-PAGE PUSH PROPERLY (Executes strictly inside the PWA view)
         if (!document.getElementById('monetag-inpage-beta')) {
           const pushScript = document.createElement('script');
           pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+          pushScript.dataset.zone = '11879957';
+          pushScript.src = 'https://nap5k.com/tag.min.js';
           document.body.appendChild(pushScript);
         }
-      }, 400);
+
+      }, 400); // 400ms fade transition
     }
-  };
-
-  // 2. Watch the screen for Monetag's high z-index overlay to appear
-  const observer = new MutationObserver(() => {
-    document.querySelectorAll('div, iframe').forEach(node => {
-      const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'splash-loader-box'];
-      if (node.nodeType === 1 && !node.closest('#app-root') && !safeIds.includes(node.id)) {
-        const st = window.getComputedStyle(node);
-        // Vignettes always inject as fixed elements with massive z-indexes
-        if ((st.position === 'fixed' || st.position === 'absolute') && st.zIndex !== 'auto' && parseInt(st.zIndex) > 10000) {
-          if (!adPopped) {
-            adPopped = true;
-            observer.disconnect(); // Stop tracking, we found the ad!
-            
-            // Wait exactly 3.5 seconds to register the impression, then enter the app
-            setTimeout(enterApp, 3500);
-          }
-        }
-      }
-    });
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-
-  // 3. Inject Vignette Script dynamically
-  const vScript = document.createElement('script');
-  vScript.dataset.zone = '11928230';
-  vScript.src = 'https://n6wxm.com/vignette.min.js';
-  document.body.appendChild(vScript);
-
-  // 4. Failsafe: If network is slow or ad is blocked, force enter app after 7.5 seconds
-  setTimeout(() => {
-    if (!adPopped) {
-      observer.disconnect();
-      enterApp();
-    }
-  }, 7500);
+  }, 4000); // 4.0 second fake loading
 }
 
 // ==========================================================================
@@ -521,7 +487,19 @@ function enforceInstallGate() {
     if (installGate) installGate.style.setProperty('display', 'none', 'important');
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
     if (splashScreen) splashScreen.style.display = 'block';
+
+    // PRE-LOAD VIGNETTE SCRIPT: 
+    // Securely loaded in background ONLY when the app is installed.
+    // This arms the ad so it is 100% ready to fire the exact millisecond the user taps "Login & Enter".
+    if (!document.getElementById('monetag-vignette')) {
+      const vScript = document.createElement('script');
+      vScript.id = 'monetag-vignette';
+      vScript.dataset.zone = '11928230';
+      vScript.src = 'https://n6wxm.com/vignette.min.js';
+      document.head.appendChild(vScript);
+    }
   } else {
+    // If not installed, ensure Splash and Vignette are completely absent
     if (splashScreen) splashScreen.style.display = 'none';
   }
 }
@@ -1443,7 +1421,7 @@ function fetchAndRenderPaymentLedger() {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
         <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️ Clear Entries</button>
+        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
       </div>
     `;
 
