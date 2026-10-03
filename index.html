@@ -8,12 +8,13 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- GOOGLE ADSENSE VERIFICATION TAG -->
+  <!-- GOOGLE ADSENSE SCRIPT & VERIFICATION TAG -->
   <meta name="google-adsense-account" content="ca-pub-7766313776374883">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7766313776374883" crossorigin="anonymous"></script>
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=40">
+  <link rel="manifest" href="/manifest.json?v=41">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -150,6 +151,16 @@
     @keyframes splashSpin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* ADSENSE CONTAINER (BELOW LOADER) */
+    #splash-ad-container {
+      display: none;
+      width: 100%;
+      max-width: 336px; /* Standard ad width max */
+      min-height: 280px; /* Standard square ad height */
+      margin-top: 24px;
+      background: var(--white); /* Blends perfectly */
     }
 
     /* COMPLETE WINDOW RIGID WRAPPER WITH AD OFFSET RESTORED */
@@ -839,6 +850,9 @@
       <div id="splash-loader-box" class="splash-loading-box">
         <span class="splash-loading-text">Connecting to kitchen...</span>
         <div class="splash-loader"></div>
+        
+        <!-- AdSense Container (Injected on Tap) -->
+        <div id="splash-ad-container"></div>
       </div>
     </div>
 
@@ -879,7 +893,7 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v40-Beta</span>
+          <span id="kitchen-version-badge">v41-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
@@ -1089,6 +1103,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=40"></script>
+  <script src="/app.js?v=41"></script>
 </body>
 </html>
