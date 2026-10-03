@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v36 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v37 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v36";
+const CURRENT_APP_VERSION = "v37";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,8 +28,30 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, SURGICAL AD ASSASSIN & IN-PAGE PUSH ENGINE
+// 2. SPLASH AUTH, ACTIVE AD TRACKER & SEQUENTIAL INJECTION ENGINE
 // ==========================================================================
+let isAppActive = false;
+
+// Function to securely hunt down and remove ONLY fullscreen Vignettes
+function removeFullscreenAds() {
+  const windowHeight = window.innerHeight;
+  const windowWidth = window.innerWidth;
+  
+  document.querySelectorAll('body > div, html > div, iframe').forEach(el => {
+    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
+    if (!el.closest('#app-root') && !safeIds.includes(el.id)) {
+      const rect = el.getBoundingClientRect();
+      const z = window.getComputedStyle(el).zIndex;
+      
+      // If it takes up > 50% of the screen and has high z-index, it's a Vignette overlay. KILL IT.
+      if (rect.height > (windowHeight * 0.5) && rect.width > (windowWidth * 0.5) && z !== 'auto' && parseInt(z) > 1000) {
+        el.style.setProperty('display', 'none', 'important');
+        el.remove();
+      }
+    }
+  });
+}
+
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
@@ -46,43 +68,61 @@ function executeAppLogin() {
   vScript.src = 'https://n6wxm.com/vignette.min.js';
   document.body.appendChild(vScript);
 
-  // 3. Wait 4.5s for valid impression, then SURGICALLY kill ONLY the Vignette
-  setTimeout(() => {
-    const windowHeight = window.innerHeight;
-    const windowWidth = window.innerWidth;
+  let checkCount = 0;
+  let adFound = false;
+
+  // 3. Active Ad Tracker: Scan the screen every 200ms to see if the ad has arrived
+  const adScanner = setInterval(() => {
+    checkCount++;
+    let currentlyFound = false;
     
-    // Target only full-screen ad overlays (Height > 60% of screen)
-    document.querySelectorAll('div, iframe').forEach(node => {
+    const windowHeight = window.innerHeight;
+    document.querySelectorAll('body > div, html > div, iframe').forEach(el => {
       const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
-      if (!node.closest('#app-root') && !safeIds.includes(node.id)) {
-        const rect = node.getBoundingClientRect();
-        if (rect.height > (windowHeight * 0.6) && rect.width > (windowWidth * 0.6)) {
-          node.style.setProperty('display', 'none', 'important');
-          node.style.setProperty('opacity', '0', 'important');
-          node.style.setProperty('pointer-events', 'none', 'important');
+      if (!el.closest('#app-root') && !safeIds.includes(el.id)) {
+        const rect = el.getBoundingClientRect();
+        const z = window.getComputedStyle(el).zIndex;
+        if (rect.height > (windowHeight * 0.5) && z !== 'auto' && parseInt(z) > 1000) {
+          currentlyFound = true;
         }
       }
     });
 
-    // 4. Fade out splash screen
-    const splash = document.getElementById('app-splash-screen');
-    if (splash) {
-      splash.classList.add('fade-out');
-      setTimeout(() => {
-        splash.style.display = 'none';
-        checkAppOnboarding();
-        
-        // 5. INJECT IN-PAGE PUSH EXACTLY AS USER PROVIDED (After App Open)
-        if (!document.getElementById('monetag-inpage-beta')) {
-          const pushScript = document.createElement('script');
-          pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-          document.body.appendChild(pushScript);
-        }
-
-      }, 400);
+    if (currentlyFound && !adFound) {
+      adFound = true;
+      clearInterval(adScanner);
+      // Ad has fully appeared! Now wait exactly 4 seconds for the impression, then clear it.
+      setTimeout(completeLoginFlow, 4000); 
+    } else if (checkCount > 40) { 
+      // TIMEOUT: If 8 seconds pass and the network is too slow to load the ad, skip it.
+      clearInterval(adScanner);
+      completeLoginFlow();
     }
-  }, 4500);
+  }, 200);
+}
+
+function completeLoginFlow() {
+  removeFullscreenAds();
+  isAppActive = true;
+
+  // Fade out splash screen
+  const splash = document.getElementById('app-splash-screen');
+  if (splash && !splash.classList.contains('fade-out')) {
+    splash.classList.add('fade-out');
+    
+    setTimeout(() => {
+      splash.style.display = 'none';
+      checkAppOnboarding();
+      
+      // INJECT IN-PAGE PUSH EXACTLY ONCE (After App successfully opens)
+      if (!document.getElementById('monetag-inpage-beta')) {
+        const pushScript = document.createElement('script');
+        pushScript.id = 'monetag-inpage-beta';
+        pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+        document.body.appendChild(pushScript);
+      }
+    }, 400);
+  }
 }
 
 // ==========================================================================
@@ -1411,7 +1451,7 @@ function fetchAndRenderPaymentLedger() {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
         <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
+        <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑 Clear Entries</button>
       </div>
     `;
 
@@ -1671,6 +1711,9 @@ function evaluateCumulativeAdHeight() {
 
 const adObserver = new MutationObserver(() => {
   evaluateCumulativeAdHeight();
+  
+  // ROGUE AD BODYGUARD: Instantly kill any Vignette that tries to spawn late
+  if (isAppActive) removeFullscreenAds();
 });
 
 setInterval(evaluateCumulativeAdHeight, 400);
