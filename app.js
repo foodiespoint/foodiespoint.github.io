@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v40 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v41 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v40";
+const CURRENT_APP_VERSION = "v41";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,92 +28,49 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & LOGIN ENGINE (ADSENSE TESTING MODE)
+// 2. SPLASH AUTH & ADSENSE TRIGGER ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
+  const adContainer = document.getElementById('splash-ad-container');
 
-  // Swap UI to stacked loading state immediately
+  // 1. Swap UI to stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  /* 
-  // ========================================================================
-  // MONETAG VIGNETTE & IN-PAGE PUSH (COMMENTED OUT FOR ADSENSE TESTING)
-  // ========================================================================
-  let adDetected = false;
-  let appRevealed = false;
-
-  const enterApp = () => {
-    if (appRevealed) return;
-    appRevealed = true;
-    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta'];
-    Array.from(document.body.children).forEach(child => {
-      if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-        child.style.setProperty('display', 'none', 'important');
-        child.style.setProperty('opacity', '0', 'important');
-        child.style.setProperty('pointer-events', 'none', 'important');
-      }
-    });
-    const splash = document.getElementById('app-splash-screen');
-    if (splash) {
-      splash.classList.add('fade-out');
-      setTimeout(() => {
-        splash.style.display = 'none';
-        checkAppOnboarding();
-        if (!document.getElementById('monetag-inpage-beta')) {
-          const pushScript = document.createElement('script');
-          pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-          document.body.appendChild(pushScript);
-        }
-      }, 400);
+  // 2. Inject AdSense code directly into the placeholder
+  if (adContainer) {
+    adContainer.style.display = 'block';
+    adContainer.innerHTML = `
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-7766313776374883"
+           data-ad-slot="7258527507"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    `;
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error("AdSense push error:", e);
     }
-  };
+  }
 
-  const trackerInterval = setInterval(() => {
-    if (adDetected) return;
-    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
-    Array.from(document.body.children).forEach(child => {
-      if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
-        const st = window.getComputedStyle(child);
-        if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
-          adDetected = true;
-          clearInterval(trackerInterval);
-          setTimeout(enterApp, 4000);
-        }
-      }
-    });
-  }, 250);
-
-  const vScript = document.createElement('script');
-  vScript.dataset.zone = '11928230';
-  vScript.src = 'https://n6wxm.com/vignette.min.js';
-  document.body.appendChild(vScript);
-
-  setTimeout(() => {
-    if (!adDetected) {
-      clearInterval(trackerInterval);
-      enterApp();
-    }
-  }, 8000);
-  // ========================================================================
-  */
-
-  // Clean Login Delay for AdSense Testing (2.5 seconds)
+  // 3. Wait 4.5 seconds for the impression to register, then enter app
   setTimeout(() => {
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
+        if (adContainer) adContainer.innerHTML = ''; // Destroy ad node to free memory
         checkAppOnboarding();
       }, 400);
     }
-  }, 2500);
+  }, 4500);
 }
 
 // ==========================================================================
@@ -1230,7 +1187,7 @@ function togglePasscodeVisibility() {
     if (eyeBtn) eyeBtn.textContent = '🔒';
   } else {
     input.type = 'password';
-    if (eyeBtn) eyeBtn.textContent = '👁️';
+    if (eyeBtn) eyeBtn.textContent = '👁️️';
   }
 }
 
@@ -1416,7 +1373,7 @@ function fetchAndRenderPaymentLedger() {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
           <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-          <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️ Clear Entries</button>
+          <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
         </div>
         <p style="text-align:center; padding: 30px; color:#666;">No active payment records found today.</p>
       `;
@@ -1664,56 +1621,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
-// ==========================================================================
-function evaluateCumulativeAdHeight() {
-  let maxBottom = 0;
-  const windowHeight = window.innerHeight;
-  
-  const elements = document.querySelectorAll('div, iframe');
-  
-  for (let i = 0; i < elements.length; i++) {
-     const el = elements[i];
-     if (el.closest('#app-root') || el.closest('#install-gate-overlay') || el.closest('#app-splash-screen')) continue;
-     
-     const st = window.getComputedStyle(el);
-     if (st.position === 'fixed' || st.position === 'absolute') {
-         if (st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
-             const rect = el.getBoundingClientRect();
-             if (rect.height > 10 && rect.height < (windowHeight * 0.5) && rect.top >= 0 && rect.top <= 100) {
-                 if (rect.bottom > maxBottom) {
-                     maxBottom = rect.bottom;
-                 }
-             }
-         }
-     }
-  }
-
-  if (maxBottom > 0 && maxBottom < 400) {
-    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 2)}px`);
-  } else {
-    document.documentElement.style.setProperty('--ad-offset', '0px');
-  }
-}
-
-const adObserver = new MutationObserver(() => {
-  evaluateCumulativeAdHeight();
-});
-
-setInterval(evaluateCumulativeAdHeight, 400);
-
-document.addEventListener("DOMContentLoaded", () => {
-  adObserver.observe(document.body, { 
-    childList: true, 
-    subtree: true, 
-    attributes: true, 
-    attributeFilter: ['style', 'class'] 
-  });
-  evaluateCumulativeAdHeight();
-});
-
-// ==========================================================================
-// 18. INITIALIZE APP ON DOM READY
+// 17. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
