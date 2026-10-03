@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v39 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v40 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v39";
+const CURRENT_APP_VERSION = "v40";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,26 +28,28 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, STRICT AD TRACKER & SEQUENTIAL INJECTION ENGINE
+// 2. SPLASH AUTH & LOGIN ENGINE (ADSENSE TESTING MODE)
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap UI to stacked loading state immediately
+  // Swap UI to stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
+  /* 
+  // ========================================================================
+  // MONETAG VIGNETTE & IN-PAGE PUSH (COMMENTED OUT FOR ADSENSE TESTING)
+  // ========================================================================
   let adDetected = false;
   let appRevealed = false;
 
   const enterApp = () => {
     if (appRevealed) return;
     appRevealed = true;
-
-    // Destroy all Vignette DOM nodes to ensure it never returns inside the app
     const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta'];
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
@@ -56,16 +58,12 @@ function executeAppLogin() {
         child.style.setProperty('pointer-events', 'none', 'important');
       }
     });
-
-    // Fade out splash screen and reveal app
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
         checkAppOnboarding();
-        
-        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN IS COMPLETE
         if (!document.getElementById('monetag-inpage-beta')) {
           const pushScript = document.createElement('script');
           pushScript.id = 'monetag-inpage-beta';
@@ -76,39 +74,46 @@ function executeAppLogin() {
     }
   };
 
-  // 2. High-speed tracker: Wait for the ad to actually visually appear
   const trackerInterval = setInterval(() => {
     if (adDetected) return;
-    
     const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
         const st = window.getComputedStyle(child);
-        // Vignettes trigger massive full-screen fixed divs with high z-index
         if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
           adDetected = true;
           clearInterval(trackerInterval);
-          
-          // Ad is on screen! Hold it for exactly 4.0 seconds, then assassinate it.
           setTimeout(enterApp, 4000);
         }
       }
     });
   }, 250);
 
-  // 3. Inject Vignette Script ONLY NOW (Guarantees it responds strictly to this tap)
   const vScript = document.createElement('script');
   vScript.dataset.zone = '11928230';
   vScript.src = 'https://n6wxm.com/vignette.min.js';
   document.body.appendChild(vScript);
 
-  // 4. Failsafe: If network is slow or ad is blocked, force enter app after 8 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
       enterApp();
     }
   }, 8000);
+  // ========================================================================
+  */
+
+  // Clean Login Delay for AdSense Testing (2.5 seconds)
+  setTimeout(() => {
+    const splash = document.getElementById('app-splash-screen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        checkAppOnboarding();
+      }, 400);
+    }
+  }, 2500);
 }
 
 // ==========================================================================
@@ -515,9 +520,6 @@ function enforceInstallGate() {
     if (installGate) installGate.style.setProperty('display', 'none', 'important');
     if (appContent) appContent.style.setProperty('display', 'block', 'important');
     if (splashScreen) splashScreen.style.display = 'block';
-    
-    // DELIBERATELY REMOVED VIGNETTE PRE-LOAD FROM HERE.
-    // It will ONLY inject when the user taps "Login & Enter".
   } else {
     if (splashScreen) splashScreen.style.display = 'none';
   }
@@ -832,7 +834,7 @@ function renderKitchenMenu() {
               <div class="price">₹${dish.price}</div>
             </div>
           </div>
-          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏️ Edit</button>
+          <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
         `;
         container.appendChild(card);
       });
@@ -1662,26 +1664,22 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE
+// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
   const windowHeight = window.innerHeight;
   
-  // Recursively scan deep to find dynamically injected fixed/absolute banners
   const elements = document.querySelectorAll('div, iframe');
   
   for (let i = 0; i < elements.length; i++) {
      const el = elements[i];
-     
-     // Skip elements inside our known app containers
      if (el.closest('#app-root') || el.closest('#install-gate-overlay') || el.closest('#app-splash-screen')) continue;
      
      const st = window.getComputedStyle(el);
      if (st.position === 'fixed' || st.position === 'absolute') {
          if (st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
              const rect = el.getBoundingClientRect();
-             // Look for banners that are NOT full screen, but sit at the top of the viewport
              if (rect.height > 10 && rect.height < (windowHeight * 0.5) && rect.top >= 0 && rect.top <= 100) {
                  if (rect.bottom > maxBottom) {
                      maxBottom = rect.bottom;
