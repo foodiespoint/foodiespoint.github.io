@@ -14,7 +14,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=41">
+  <link rel="manifest" href="/manifest.json?v=42">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -160,7 +160,7 @@
       max-width: 336px; /* Standard ad width max */
       min-height: 280px; /* Standard square ad height */
       margin-top: 24px;
-      background: var(--white); /* Blends perfectly */
+      background: var(--white); 
     }
 
     /* COMPLETE WINDOW RIGID WRAPPER WITH AD OFFSET RESTORED */
@@ -228,7 +228,7 @@
     #main-app-content {
       position: absolute;
       top: 0; bottom: 0; left: 0; right: 0;
-      display: none !important;
+      display: block;
     }
 
     .app-header {
@@ -313,8 +313,104 @@
       font-weight: 700;
     }
 
-    #customer-view {
+    /* ========================================================== */
+    /* HOME DASHBOARD VIEW STYLES */
+    /* ========================================================== */
+    #home-dashboard-view {
+      display: none; /* Flex via JS */
+      position: absolute;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--bg-light);
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      overflow-y: auto;
+    }
+
+    .dash-welcome {
+      margin-bottom: 28px;
+    }
+
+    .dash-welcome h2 {
+      font-size: 1.65rem;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      font-weight: 800;
+    }
+
+    .dash-welcome p {
+      color: #666;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .dash-grid {
       display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .dash-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 20px 18px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: left;
+    }
+
+    .dash-card:active {
+      transform: scale(0.97);
+    }
+
+    .dash-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-right: 18px;
+      flex-shrink: 0;
+    }
+
+    .dash-text {
+      flex: 1;
+    }
+
+    .dash-text h3 {
+      font-size: 1.15rem;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+      font-weight: 800;
+    }
+
+    .dash-text p {
+      font-size: 0.9rem;
+      color: #777;
+      font-weight: 500;
+    }
+
+    .dash-arrow {
+      color: #CCC;
+      font-size: 1.4rem;
+      font-weight: bold;
+      padding-left: 10px;
+    }
+
+    /* CUSTOMER MENU VIEW */
+    #customer-view {
+      display: none; /* Flex via JS */
       position: absolute;
       top: 56px;
       bottom: 0;
@@ -893,11 +989,52 @@
 
         <div class="header-right-group">
           <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v41-Beta</span>
+          <span id="kitchen-version-badge">v42-Beta</span>
           <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
         </div>
       </header>
 
+      <!-- BRAND NEW: HOME DASHBOARD HUB -->
+      <main id="home-dashboard-view">
+        <div class="dash-welcome">
+          <h2>Welcome back! 👋</h2>
+          <p>What are you craving today?</p>
+        </div>
+
+        <div class="dash-grid">
+          <!-- Button 1: Live Menu -->
+          <div class="dash-card" onclick="openLiveMenu()">
+            <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
+            <div class="dash-text">
+              <h3>Daily Live Menu</h3>
+              <p>Fresh meals, updated daily</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Button 2: Festive Special -->
+          <div class="dash-card" onclick="openFestiveSpecial()">
+            <div class="dash-icon" style="background: #E8F5E9; color: #2E7D32;">🎉</div>
+            <div class="dash-text">
+              <h3>Festive Special</h3>
+              <p>Exclusive combos & sweets</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+          
+          <!-- Future Button Placeholder -->
+          <div class="dash-card" onclick="alert('Party Orders module coming soon!')">
+            <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
+            <div class="dash-text">
+              <h3>Bulk / Party Orders</h3>
+              <p>For your special events</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+        </div>
+      </main>
+
+      <!-- CUSTOMER ORDER VIEW -->
       <main id="customer-view">
         <div class="customer-half customer-upper">
           <h2 class="section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
@@ -1103,6 +1240,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=41"></script>
+  <script src="/app.js?v=42"></script>
 </body>
 </html>
