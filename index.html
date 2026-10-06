@@ -14,7 +14,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=42">
+  <link rel="manifest" href="/manifest.json?v=43">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -271,7 +271,7 @@
       transform: translateX(-50%);
     }
 
-    .btn-back-arrow, .btn-icon {
+    .btn-back-arrow {
       border: 1px solid var(--border-color);
       background: var(--bg-light);
       width: 36px;
@@ -287,14 +287,19 @@
       padding-bottom: 2px;
     }
 
-    .btn-kitchen, .btn-kitchen-menu {
+    /* GLOBAL 3-LINE MENU BUTTON */
+    .btn-menu {
       border: 1px solid var(--border-color);
       background: var(--bg-light);
-      padding: 6px 14px;
+      padding: 8px 14px;
       border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     #kitchen-version-badge {
@@ -812,43 +817,44 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
-    .kitchen-dropdown {
+    /* GLOBAL MENU DROPDOWN */
+    .menu-dropdown {
       display: none;
       position: fixed;
       top: calc(60px + var(--ad-offset));
       right: 16px;
       background: var(--white);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       z-index: 2600;
-      min-width: 190px;
+      min-width: 200px;
       overflow: hidden;
       transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
-    .kitchen-dropdown .dropdown-item {
-      padding: 12px 16px;
-      font-size: 0.95rem;
+    .menu-dropdown .dropdown-item {
+      padding: 14px 18px;
+      font-size: 0.98rem;
       font-weight: 600;
       color: var(--text-dark);
       cursor: pointer;
       border-bottom: 1px solid var(--bg-light);
     }
     
-    .kitchen-dropdown .dropdown-item:last-child {
+    .menu-dropdown .dropdown-item:last-child {
       border-bottom: none;
     }
     
-    .kitchen-dropdown .dropdown-item:active {
+    .menu-dropdown .dropdown-item:active {
       background: var(--bg-light);
     }
     
-    .kitchen-dropdown-backdrop {
+    .menu-dropdown-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: transparent;
+      background: rgba(0,0,0,0.15);
       z-index: 2500;
     }
 
@@ -981,20 +987,20 @@
 
       <header class="app-header" id="app-header">
         <div class="header-left-group">
-          <button class="btn-kitchen" id="header-kitchen-btn" onclick="openKitchenPINModal()">Kitchen</button>
+          <!-- Back button isolated on left -->
           <button class="btn-back-arrow" id="header-back-btn" onclick="handleHeaderBack()" style="display: none;" aria-label="Back">←</button>
         </div>
 
         <div class="app-title" id="main-app-title">Foodies Point</div>
 
         <div class="header-right-group">
-          <button class="btn-icon" id="header-notify-btn" onclick="openAlertsModal()" aria-label="Notifications">🔔</button>
-          <span id="kitchen-version-badge">v42-Beta</span>
-          <button class="btn-kitchen-menu" id="header-drawer-btn" onclick="toggleKitchenMenuDropdown()" style="display: none;" aria-label="Open Kitchen Menu">☰ Menu</button>
+          <span id="kitchen-version-badge">v43-Beta</span>
+          <!-- Global Menu Button -->
+          <button class="btn-menu" id="header-drawer-btn" onclick="toggleMenuDropdown()" aria-label="Menu">☰ Menu</button>
         </div>
       </header>
 
-      <!-- BRAND NEW: HOME DASHBOARD HUB -->
+      <!-- HOME DASHBOARD HUB -->
       <main id="home-dashboard-view">
         <div class="dash-welcome">
           <h2>Welcome back! 👋</h2>
@@ -1002,7 +1008,6 @@
         </div>
 
         <div class="dash-grid">
-          <!-- Button 1: Live Menu -->
           <div class="dash-card" onclick="openLiveMenu()">
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
@@ -1012,7 +1017,6 @@
             <div class="dash-arrow">➔</div>
           </div>
 
-          <!-- Button 2: Festive Special -->
           <div class="dash-card" onclick="openFestiveSpecial()">
             <div class="dash-icon" style="background: #E8F5E9; color: #2E7D32;">🎉</div>
             <div class="dash-text">
@@ -1022,7 +1026,6 @@
             <div class="dash-arrow">➔</div>
           </div>
           
-          <!-- Future Button Placeholder -->
           <div class="dash-card" onclick="alert('Party Orders module coming soon!')">
             <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
             <div class="dash-text">
@@ -1063,7 +1066,7 @@
       <section id="kitchen-view">
         <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
         <div class="kitchen-menu-actions">
-          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
+          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
@@ -1104,12 +1107,20 @@
     </div> <!-- End main-app-content -->
   </div> <!-- End app-root -->
 
-  <!-- DROPDOWN & BACKDROP -->
-  <div class="kitchen-dropdown-backdrop" id="kitchen-dropdown-backdrop" onclick="toggleKitchenMenuDropdown(false)"></div>
-  <div id="kitchen-dropdown" class="kitchen-dropdown">
-    <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
-    <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
-    <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
+  <!-- GLOBAL MENU DROPDOWN & BACKDROP -->
+  <div class="menu-dropdown-backdrop" id="menu-dropdown-backdrop" onclick="toggleMenuDropdown(false)"></div>
+  <div id="menu-dropdown" class="menu-dropdown">
+    <!-- Visible to Customers -->
+    <div id="customer-menu-items">
+      <div class="dropdown-item" onclick="openAlertsModal(); toggleMenuDropdown(false)">🔔 Notifications</div>
+      <div class="dropdown-item" onclick="openKitchenPINModal(); toggleMenuDropdown(false)">👨‍🍳 Kitchen Console</div>
+    </div>
+    <!-- Visible to Kitchen Admin -->
+    <div id="kitchen-menu-items" style="display: none;">
+      <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
+      <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
+      <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
+    </div>
   </div>
 
   <!-- MODALS -->
@@ -1240,6 +1251,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=42"></script>
+  <script src="/app.js?v=43"></script>
 </body>
 </html>
