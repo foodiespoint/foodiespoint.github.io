@@ -1,12 +1,12 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v42 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v43 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v42";
+const CURRENT_APP_VERSION = "v43";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
 let db = null;
-let currentAppView = 'dashboard'; // Tracks the current customer view
+let currentAppView = 'dashboard'; 
 
 try {
   const firebaseConfig = {
@@ -37,12 +37,12 @@ function executeAppLogin() {
   const headerText = document.getElementById('splash-header-text');
   const adContainer = document.getElementById('splash-ad-container');
 
-  // 1. Swap UI to stacked loading state immediately
+  // Swap UI to stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // 2. Inject AdSense code directly into the placeholder
+  // Inject AdSense code directly into the placeholder
   if (adContainer) {
     adContainer.style.display = 'block';
     adContainer.innerHTML = `
@@ -60,16 +60,16 @@ function executeAppLogin() {
     }
   }
 
-  // 3. Wait 4.5 seconds for the impression to register, then enter app
+  // Wait 4.5 seconds for the impression to register, then enter app
   setTimeout(() => {
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
-        if (adContainer) adContainer.innerHTML = ''; // Destroy ad node to free memory
+        if (adContainer) adContainer.innerHTML = ''; // Destroy ad node
         checkAppOnboarding();
-        showDashboard(); // Boot directly into the Home Dashboard Hub
+        showDashboard(); 
       }, 400);
     }
   }, 4500);
@@ -105,7 +105,6 @@ function openLiveMenu(pushToHistory = true) {
 }
 
 function openFestiveSpecial() {
-  // Placeholder for future logic
   alert("🎉 Festive Special Menu is coming soon! Check back during the holidays.");
 }
 
@@ -747,11 +746,11 @@ function saveEditedItem() {
 }
 
 // ==========================================================================
-// 8. KITCHEN DROPDOWN MENU
+// 8. GLOBAL MENU DROPDOWN ENGINE
 // ==========================================================================
-function toggleKitchenMenuDropdown(forceState) {
-  const dropdown = document.getElementById('kitchen-dropdown');
-  const backdrop = document.getElementById('kitchen-dropdown-backdrop');
+function toggleMenuDropdown(forceState) {
+  const dropdown = document.getElementById('menu-dropdown');
+  const backdrop = document.getElementById('menu-dropdown-backdrop');
   if (!dropdown || !backdrop) return;
 
   const isOpen = dropdown.style.display === 'block';
@@ -1223,7 +1222,7 @@ function togglePasscodeVisibility() {
     if (eyeBtn) eyeBtn.textContent = '🔒';
   } else {
     input.type = 'password';
-    if (eyeBtn) eyeBtn.textContent = '👁️';
+    if (eyeBtn) eyeBtn.textContent = '👁';
   }
 }
 
@@ -1246,11 +1245,11 @@ function enterKitchenMode() {
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
 
-  document.getElementById('header-notify-btn').style.display = 'none';
-  document.getElementById('header-kitchen-btn').style.display = 'none';
+  // Toggle dropdown items to show Kitchen Options
+  document.getElementById('customer-menu-items').style.display = 'none';
+  document.getElementById('kitchen-menu-items').style.display = 'block';
+
   document.getElementById('header-back-btn').style.display = 'inline-flex';
-  
-  document.getElementById('header-drawer-btn').style.display = 'inline-block';
   document.getElementById('kitchen-version-badge').style.display = 'inline-block';
 
   document.getElementById('kitchen-view').style.display = 'flex';
@@ -1271,7 +1270,7 @@ function enterKitchenMode() {
 }
 
 function handleHeaderBack() {
-  toggleKitchenMenuDropdown(false);
+  toggleMenuDropdown(false);
   const custPage = document.getElementById('customer-data-view');
   const payPage = document.getElementById('payment-details-view');
   const ordersPage = document.getElementById('kitchen-orders-view');
@@ -1296,17 +1295,17 @@ function exitKitchenMode(triggerHistoryBack = true) {
   if (!isKitchenMode) return;
   isKitchenMode = false;
 
-  toggleKitchenMenuDropdown(false);
+  toggleMenuDropdown(false);
   closeKitchenSubPage(false);
   if (triggerHistoryBack && window.location.hash.startsWith('#kitchen')) history.back();
 
   document.getElementById('main-app-title').style.display = 'block';
   document.getElementById('kitchen-view').style.display = 'none';
   
-  document.getElementById('header-notify-btn').style.display = 'inline-flex';
-  document.getElementById('header-kitchen-btn').style.display = 'inline-block';
+  // Toggle dropdown back to Customer Options
+  document.getElementById('customer-menu-items').style.display = 'block';
+  document.getElementById('kitchen-menu-items').style.display = 'none';
   
-  document.getElementById('header-drawer-btn').style.display = 'none';
   document.getElementById('kitchen-version-badge').style.display = 'none';
   
   checkAppOnboarding();
@@ -1324,14 +1323,14 @@ function exitKitchenMode(triggerHistoryBack = true) {
 // 14. DEDICATED KITCHEN SUB-PAGES
 // ==========================================================================
 function openKitchenOrdersPage() {
-  toggleKitchenMenuDropdown(false);
+  toggleMenuDropdown(false);
   history.pushState({ kitchenSubPage: 'orders' }, '', '#kitchen-orders');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'flex';
 }
 
 function openCustomerDataPage() {
-  toggleKitchenMenuDropdown(false);
+  toggleMenuDropdown(false);
   history.pushState({ kitchenSubPage: 'customers' }, '', '#kitchen-customers');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-data-view').style.display = 'flex';
@@ -1339,7 +1338,7 @@ function openCustomerDataPage() {
 }
 
 function openPaymentDetailsPage() {
-  toggleKitchenMenuDropdown(false);
+  toggleMenuDropdown(false);
   history.pushState({ kitchenSubPage: 'payments' }, '', '#kitchen-payments');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'flex';
@@ -1678,7 +1677,7 @@ function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
   
   document.body.childNodes.forEach(child => {
-    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('kitchen-dropdown-backdrop') && !child.classList.contains('kitchen-dropdown')) {
+    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('menu-dropdown-backdrop') && !child.classList.contains('menu-dropdown')) {
       const st = window.getComputedStyle(child);
       const isFixed = (st.position === 'fixed' || st.position === 'absolute');
       
