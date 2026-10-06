@@ -1,11 +1,12 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v41 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v42 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v41";
+const CURRENT_APP_VERSION = "v42";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
 let db = null;
+let currentAppView = 'dashboard'; // Tracks the current customer view
 
 try {
   const firebaseConfig = {
@@ -68,9 +69,44 @@ function executeAppLogin() {
         splash.style.display = 'none';
         if (adContainer) adContainer.innerHTML = ''; // Destroy ad node to free memory
         checkAppOnboarding();
+        showDashboard(); // Boot directly into the Home Dashboard Hub
       }, 400);
     }
   }, 4500);
+}
+
+// ==========================================================================
+// 2B. CUSTOMER DASHBOARD ROUTING ENGINE
+// ==========================================================================
+function showDashboard(pushToHistory = true) {
+  currentAppView = 'dashboard';
+  
+  document.getElementById('customer-view').style.display = 'none';
+  document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('home-dashboard-view').style.display = 'flex';
+  
+  document.getElementById('header-back-btn').style.display = 'none';
+  document.getElementById('main-app-title').textContent = 'Foodies Point';
+
+  if (pushToHistory) history.pushState({ page: 'dashboard' }, '', '#dashboard');
+}
+
+function openLiveMenu(pushToHistory = true) {
+  currentAppView = 'live-menu';
+
+  document.getElementById('home-dashboard-view').style.display = 'none';
+  document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('customer-view').style.display = 'flex';
+  
+  document.getElementById('header-back-btn').style.display = 'inline-flex';
+  document.getElementById('main-app-title').textContent = 'Daily Menu';
+
+  if (pushToHistory) history.pushState({ page: 'live-menu' }, '', '#live-menu');
+}
+
+function openFestiveSpecial() {
+  // Placeholder for future logic
+  alert("🎉 Festive Special Menu is coming soon! Check back during the holidays.");
 }
 
 // ==========================================================================
@@ -1187,7 +1223,7 @@ function togglePasscodeVisibility() {
     if (eyeBtn) eyeBtn.textContent = '🔒';
   } else {
     input.type = 'password';
-    if (eyeBtn) eyeBtn.textContent = '👁️️';
+    if (eyeBtn) eyeBtn.textContent = '👁️';
   }
 }
 
@@ -1207,6 +1243,7 @@ function enterKitchenMode() {
   isKitchenMode = true;
 
   document.getElementById('main-app-title').style.display = 'none';
+  document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
 
   document.getElementById('header-notify-btn').style.display = 'none';
@@ -1239,11 +1276,18 @@ function handleHeaderBack() {
   const payPage = document.getElementById('payment-details-view');
   const ordersPage = document.getElementById('kitchen-orders-view');
   
+  // If in Kitchen Mode subpages
   if ((custPage && custPage.style.display === 'flex') || 
       (payPage && payPage.style.display === 'flex') || 
       (ordersPage && ordersPage.style.display === 'flex')) {
     closeKitchenSubPage(true);
-  } else {
+  } 
+  // If in standard Customer Live Menu view (return to dashboard)
+  else if (!isKitchenMode && currentAppView === 'live-menu') {
+    showDashboard(true);
+  }
+  // Exit Kitchen mode back to dashboard
+  else {
     exitKitchenMode(true);
   }
 }
@@ -1258,16 +1302,17 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('main-app-title').style.display = 'block';
   document.getElementById('kitchen-view').style.display = 'none';
-  document.getElementById('customer-view').style.display = 'flex';
-
+  
   document.getElementById('header-notify-btn').style.display = 'inline-flex';
   document.getElementById('header-kitchen-btn').style.display = 'inline-block';
-  document.getElementById('header-back-btn').style.display = 'none';
   
   document.getElementById('header-drawer-btn').style.display = 'none';
   document.getElementById('kitchen-version-badge').style.display = 'none';
   
   checkAppOnboarding();
+  
+  // Return securely to the Home Dashboard
+  showDashboard(false);
 
   if (db) {
     db.ref('beta_orders').off();
@@ -1373,7 +1418,7 @@ function fetchAndRenderPaymentLedger() {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px 0;">
           <h3 style="font-size:1rem; color:#2D2D2D; margin: 0;">Recent Billing Entries</h3>
-          <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️️ Clear Entries</button>
+          <button type="button" class="btn-clear-menu" onclick="clearPaymentLedger()" style="padding: 6px 12px; font-size: 0.8rem; width: auto; flex: none;">🗑️ Clear Entries</button>
         </div>
         <p style="text-align:center; padding: 30px; color:#666;">No active payment records found today.</p>
       `;
@@ -1427,12 +1472,18 @@ function fetchAndRenderPaymentLedger() {
   });
 }
 
-window.addEventListener('popstate', () => {
+// Ensure the physical back button works dynamically
+window.addEventListener('popstate', (e) => {
   if (isKitchenMode) {
     if (window.location.hash === '#kitchen') {
       closeKitchenSubPage(false);
     } else if (window.location.hash !== '#kitchen-customers' && window.location.hash !== '#kitchen-payments' && window.location.hash !== '#kitchen-orders') {
       exitKitchenMode(false);
+    }
+  } else {
+    // If popstate detected and we are inside customer flow
+    if (e.state && e.state.page === 'dashboard') {
+      showDashboard(false);
     }
   }
 });
@@ -1621,7 +1672,64 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. INITIALIZE APP ON DOM READY
+// 17. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
+// ==========================================================================
+function evaluateCumulativeAdHeight() {
+  let maxBottom = 0;
+  
+  document.body.childNodes.forEach(child => {
+    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('kitchen-dropdown-backdrop') && !child.classList.contains('kitchen-dropdown')) {
+      const st = window.getComputedStyle(child);
+      const isFixed = (st.position === 'fixed' || st.position === 'absolute');
+      
+      if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
+        const rect = child.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
+          if (rect.bottom > maxBottom) {
+            maxBottom = rect.bottom;
+          }
+        }
+      }
+    }
+  });
+
+  document.documentElement.childNodes.forEach(child => {
+    if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
+      const st = window.getComputedStyle(child);
+      if (st.position === 'fixed' || st.position === 'absolute') {
+        const rect = child.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
+          if (rect.bottom > maxBottom) maxBottom = rect.bottom;
+        }
+      }
+    }
+  });
+
+  if (maxBottom > 0 && maxBottom < 400) {
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
+  } else {
+    document.documentElement.style.setProperty('--ad-offset', '0px');
+  }
+}
+
+const adObserver = new MutationObserver(() => {
+  evaluateCumulativeAdHeight();
+});
+
+setInterval(evaluateCumulativeAdHeight, 400);
+
+document.addEventListener("DOMContentLoaded", () => {
+  adObserver.observe(document.body, { 
+    childList: true, 
+    subtree: true, 
+    attributes: true, 
+    attributeFilter: ['style', 'class'] 
+  });
+  evaluateCumulativeAdHeight();
+});
+
+// ==========================================================================
+// 18. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
