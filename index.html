@@ -8,13 +8,9 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- GOOGLE ADSENSE SCRIPT & VERIFICATION TAG -->
-  <meta name="google-adsense-account" content="ca-pub-7766313776374883">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7766313776374883" crossorigin="anonymous"></script>
-
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=43">
+  <link rel="manifest" href="/manifest.json?v=45">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -153,16 +149,6 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* ADSENSE CONTAINER (BELOW LOADER) */
-    #splash-ad-container {
-      display: none;
-      width: 100%;
-      max-width: 336px; /* Standard ad width max */
-      min-height: 280px; /* Standard square ad height */
-      margin-top: 24px;
-      background: var(--white); 
-    }
-
     /* COMPLETE WINDOW RIGID WRAPPER WITH AD OFFSET RESTORED */
     #app-root {
       position: fixed;
@@ -287,22 +273,23 @@
       padding-bottom: 2px;
     }
 
-    /* GLOBAL 3-LINE MENU BUTTON */
-    .btn-menu {
+    .btn-menu-icon {
       border: 1px solid var(--border-color);
       background: var(--bg-light);
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.9rem;
+      width: 36px;
+      height: 34px;
+      border-radius: 17px;
+      font-size: 1.2rem;
       font-weight: 700;
-      cursor: pointer;
       color: var(--text-dark);
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      cursor: pointer;
+      padding-bottom: 2px;
     }
 
-    #kitchen-version-badge {
+    .version-badge-header {
       font-size: 0.78rem;
       font-weight: 600;
       color: #888;
@@ -322,7 +309,7 @@
     /* HOME DASHBOARD VIEW STYLES */
     /* ========================================================== */
     #home-dashboard-view {
-      display: none; /* Flex via JS */
+      display: none; 
       position: absolute;
       top: 56px;
       bottom: 0;
@@ -415,7 +402,7 @@
 
     /* CUSTOMER MENU VIEW */
     #customer-view {
-      display: none; /* Flex via JS */
+      display: none; 
       position: absolute;
       top: 56px;
       bottom: 0;
@@ -817,24 +804,24 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
-    /* GLOBAL MENU DROPDOWN */
-    .menu-dropdown {
+    /* UNIFIED APP DROPDOWN */
+    .app-dropdown {
       display: none;
       position: fixed;
-      top: calc(60px + var(--ad-offset));
+      top: 60px;
       right: 16px;
       background: var(--white);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       z-index: 2600;
       min-width: 200px;
       overflow: hidden;
       transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
-    .menu-dropdown .dropdown-item {
-      padding: 14px 18px;
+    .app-dropdown .dropdown-item {
+      padding: 14px 16px;
       font-size: 0.98rem;
       font-weight: 600;
       color: var(--text-dark);
@@ -842,19 +829,19 @@
       border-bottom: 1px solid var(--bg-light);
     }
     
-    .menu-dropdown .dropdown-item:last-child {
+    .app-dropdown .dropdown-item:last-child {
       border-bottom: none;
     }
     
-    .menu-dropdown .dropdown-item:active {
+    .app-dropdown .dropdown-item:active {
       background: var(--bg-light);
     }
     
-    .menu-dropdown-backdrop {
+    .app-dropdown-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.15);
+      background: transparent;
       z-index: 2500;
     }
 
@@ -952,9 +939,6 @@
       <div id="splash-loader-box" class="splash-loading-box">
         <span class="splash-loading-text">Connecting to kitchen...</span>
         <div class="splash-loader"></div>
-        
-        <!-- AdSense Container (Injected on Tap) -->
-        <div id="splash-ad-container"></div>
       </div>
     </div>
 
@@ -985,22 +969,22 @@
   <div id="app-root">
     <div id="main-app-content">
 
+      <!-- UNIFIED HEADER -->
       <header class="app-header" id="app-header">
         <div class="header-left-group">
-          <!-- Back button isolated on left -->
           <button class="btn-back-arrow" id="header-back-btn" onclick="handleHeaderBack()" style="display: none;" aria-label="Back">←</button>
         </div>
 
         <div class="app-title" id="main-app-title">Foodies Point</div>
 
         <div class="header-right-group">
-          <span id="kitchen-version-badge">v43-Beta</span>
-          <!-- Global Menu Button -->
-          <button class="btn-menu" id="header-drawer-btn" onclick="toggleMenuDropdown()" aria-label="Menu">☰ Menu</button>
+          <span id="version-badge-header" class="version-badge-header">v45-Beta</span>
+          <!-- PERFECTLY CLEAN HAMBURGER ICON ONLY -->
+          <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu">☰</button>
         </div>
       </header>
 
-      <!-- HOME DASHBOARD HUB -->
+      <!-- BRAND NEW: HOME DASHBOARD HUB -->
       <main id="home-dashboard-view">
         <div class="dash-welcome">
           <h2>Welcome back! 👋</h2>
@@ -1008,6 +992,7 @@
         </div>
 
         <div class="dash-grid">
+          <!-- Button 1: Live Menu -->
           <div class="dash-card" onclick="openLiveMenu()">
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
@@ -1017,6 +1002,7 @@
             <div class="dash-arrow">➔</div>
           </div>
 
+          <!-- Button 2: Festive Special -->
           <div class="dash-card" onclick="openFestiveSpecial()">
             <div class="dash-icon" style="background: #E8F5E9; color: #2E7D32;">🎉</div>
             <div class="dash-text">
@@ -1026,6 +1012,7 @@
             <div class="dash-arrow">➔</div>
           </div>
           
+          <!-- Future Button Placeholder -->
           <div class="dash-card" onclick="alert('Party Orders module coming soon!')">
             <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
             <div class="dash-text">
@@ -1066,7 +1053,7 @@
       <section id="kitchen-view">
         <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
         <div class="kitchen-menu-actions">
-          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑️ Clear</button>
+          <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
@@ -1107,16 +1094,16 @@
     </div> <!-- End main-app-content -->
   </div> <!-- End app-root -->
 
-  <!-- GLOBAL MENU DROPDOWN & BACKDROP -->
-  <div class="menu-dropdown-backdrop" id="menu-dropdown-backdrop" onclick="toggleMenuDropdown(false)"></div>
-  <div id="menu-dropdown" class="menu-dropdown">
-    <!-- Visible to Customers -->
-    <div id="customer-menu-items">
-      <div class="dropdown-item" onclick="openAlertsModal(); toggleMenuDropdown(false)">🔔 Notifications</div>
-      <div class="dropdown-item" onclick="openKitchenPINModal(); toggleMenuDropdown(false)">👨‍🍳 Kitchen Console</div>
+  <!-- UNIFIED APP DROPDOWN MENU & BACKDROP -->
+  <div class="app-dropdown-backdrop" id="app-dropdown-backdrop" onclick="toggleAppDropdown(false)"></div>
+  <div id="app-dropdown" class="app-dropdown">
+    <!-- Customer Default Items -->
+    <div id="customer-dropdown-items" style="display: block;">
+      <div class="dropdown-item" onclick="toggleAppDropdown(false); openAlertsModal();">🔔 Notifications</div>
+      <div class="dropdown-item" onclick="toggleAppDropdown(false); openKitchenPINModal();">👨‍🍳 Kitchen Console</div>
     </div>
-    <!-- Visible to Kitchen Admin -->
-    <div id="kitchen-menu-items" style="display: none;">
+    <!-- Kitchen Default Items -->
+    <div id="kitchen-dropdown-items" style="display: none;">
       <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
       <div class="dropdown-item" onclick="openCustomerDataPage()">👥 Customer Data</div>
       <div class="dropdown-item" onclick="openPaymentDetailsPage()">💳 Payment Records</div>
@@ -1251,6 +1238,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=43"></script>
+  <script src="/app.js?v=45"></script>
 </body>
 </html>
