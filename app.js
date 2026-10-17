@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v43 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v45 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v43";
+const CURRENT_APP_VERSION = "v45";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,50 +29,90 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & ADSENSE TRIGGER ENGINE
+// 2. SPLASH AUTH, STRICT AD TRACKER & SEQUENTIAL INJECTION ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
-  const adContainer = document.getElementById('splash-ad-container');
 
-  // Swap UI to stacked loading state immediately
+  // 1. Swap UI to stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // Inject AdSense code directly into the placeholder
-  if (adContainer) {
-    adContainer.style.display = 'block';
-    adContainer.innerHTML = `
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-7766313776374883"
-           data-ad-slot="7258527507"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    `;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense push error:", e);
-    }
-  }
+  let adDetected = false;
+  let appRevealed = false;
 
-  // Wait 4.5 seconds for the impression to register, then enter app
-  setTimeout(() => {
+  const enterApp = () => {
+    if (appRevealed) return;
+    appRevealed = true;
+
+    // Destroy all Vignette DOM nodes to ensure it never returns inside the app
+    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta', 'monetag-vignette-beta'];
+    Array.from(document.body.children).forEach(child => {
+      if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+        child.style.setProperty('display', 'none', 'important');
+        child.style.setProperty('opacity', '0', 'important');
+        child.style.setProperty('pointer-events', 'none', 'important');
+      }
+    });
+
+    // Fade out splash screen and reveal app dashboard
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
-        if (adContainer) adContainer.innerHTML = ''; // Destroy ad node
         checkAppOnboarding();
+        
+        // Boot into Home Dashboard
         showDashboard(); 
+
+        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN IS COMPLETE
+        if (!document.getElementById('monetag-inpage-beta')) {
+          const pushScript = document.createElement('script');
+          pushScript.id = 'monetag-inpage-beta';
+          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+          document.body.appendChild(pushScript);
+        }
       }, 400);
     }
-  }, 4500);
+  };
+
+  // 2. High-speed tracker: Wait for the ad to actually visually appear
+  const trackerInterval = setInterval(() => {
+    if (adDetected) return;
+    
+    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
+    Array.from(document.body.children).forEach(child => {
+      if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
+        const st = window.getComputedStyle(child);
+        // Vignettes trigger massive full-screen fixed divs with high z-index
+        if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
+          adDetected = true;
+          clearInterval(trackerInterval);
+          
+          // Ad is on screen! Hold it for exactly 4.0 seconds, then assassinate it.
+          setTimeout(enterApp, 4000);
+        }
+      }
+    });
+  }, 250);
+
+  // 3. INJECT EXACT VIGNETTE SNIPPET VERBATIM
+  const inlineVignette = document.createElement('script');
+  inlineVignette.id = 'monetag-vignette-beta';
+  inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+  document.body.appendChild(inlineVignette);
+
+  // 4. Failsafe: If network is slow or ad is blocked, force enter app after 8 seconds
+  setTimeout(() => {
+    if (!adDetected) {
+      clearInterval(trackerInterval);
+      enterApp();
+    }
+  }, 8000);
 }
 
 // ==========================================================================
@@ -746,11 +786,11 @@ function saveEditedItem() {
 }
 
 // ==========================================================================
-// 8. GLOBAL MENU DROPDOWN ENGINE
+// 8. UNIFIED APP DROPDOWN MENU
 // ==========================================================================
-function toggleMenuDropdown(forceState) {
-  const dropdown = document.getElementById('menu-dropdown');
-  const backdrop = document.getElementById('menu-dropdown-backdrop');
+function toggleAppDropdown(forceState) {
+  const dropdown = document.getElementById('app-dropdown');
+  const backdrop = document.getElementById('app-dropdown-backdrop');
   if (!dropdown || !backdrop) return;
 
   const isOpen = dropdown.style.display === 'block';
@@ -1133,7 +1173,7 @@ function renderCustomerOrderHistory() {
     const dateStr = new Date(myOrder.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     
     const typeEmoji = myOrder.orderType === 'Delivery' ? '🚚' : '🥡';
-    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin-top: 6px; font-size: 0.85rem; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
+    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
         ${typeEmoji} ${myOrder.orderType} @ ${myOrder.scheduledTime}
     </div>`;
 
@@ -1241,16 +1281,14 @@ function enterKitchenMode() {
   if (!isKitchenMode) history.pushState({ kitchenMode: true }, '', '#kitchen');
   isKitchenMode = true;
 
-  document.getElementById('main-app-title').style.display = 'none';
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
 
-  // Toggle dropdown items to show Kitchen Options
-  document.getElementById('customer-menu-items').style.display = 'none';
-  document.getElementById('kitchen-menu-items').style.display = 'block';
-
   document.getElementById('header-back-btn').style.display = 'inline-flex';
-  document.getElementById('kitchen-version-badge').style.display = 'inline-block';
+  
+  // Toggle Dropdown Menu contents
+  document.getElementById('customer-dropdown-items').style.display = 'none';
+  document.getElementById('kitchen-dropdown-items').style.display = 'block';
 
   document.getElementById('kitchen-view').style.display = 'flex';
   
@@ -1270,7 +1308,7 @@ function enterKitchenMode() {
 }
 
 function handleHeaderBack() {
-  toggleMenuDropdown(false);
+  toggleAppDropdown(false);
   const custPage = document.getElementById('customer-data-view');
   const payPage = document.getElementById('payment-details-view');
   const ordersPage = document.getElementById('kitchen-orders-view');
@@ -1295,18 +1333,15 @@ function exitKitchenMode(triggerHistoryBack = true) {
   if (!isKitchenMode) return;
   isKitchenMode = false;
 
-  toggleMenuDropdown(false);
+  toggleAppDropdown(false);
   closeKitchenSubPage(false);
   if (triggerHistoryBack && window.location.hash.startsWith('#kitchen')) history.back();
 
-  document.getElementById('main-app-title').style.display = 'block';
   document.getElementById('kitchen-view').style.display = 'none';
   
-  // Toggle dropdown back to Customer Options
-  document.getElementById('customer-menu-items').style.display = 'block';
-  document.getElementById('kitchen-menu-items').style.display = 'none';
-  
-  document.getElementById('kitchen-version-badge').style.display = 'none';
+  // Restore Dropdown Menu contents
+  document.getElementById('customer-dropdown-items').style.display = 'block';
+  document.getElementById('kitchen-dropdown-items').style.display = 'none';
   
   checkAppOnboarding();
   
@@ -1323,14 +1358,14 @@ function exitKitchenMode(triggerHistoryBack = true) {
 // 14. DEDICATED KITCHEN SUB-PAGES
 // ==========================================================================
 function openKitchenOrdersPage() {
-  toggleMenuDropdown(false);
+  toggleAppDropdown(false);
   history.pushState({ kitchenSubPage: 'orders' }, '', '#kitchen-orders');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'flex';
 }
 
 function openCustomerDataPage() {
-  toggleMenuDropdown(false);
+  toggleAppDropdown(false);
   history.pushState({ kitchenSubPage: 'customers' }, '', '#kitchen-customers');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-data-view').style.display = 'flex';
@@ -1338,7 +1373,7 @@ function openCustomerDataPage() {
 }
 
 function openPaymentDetailsPage() {
-  toggleMenuDropdown(false);
+  toggleAppDropdown(false);
   history.pushState({ kitchenSubPage: 'payments' }, '', '#kitchen-payments');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'flex';
@@ -1671,41 +1706,33 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR (NO Z-INDEX LIMIT)
+// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
+  const windowHeight = window.innerHeight;
   
-  document.body.childNodes.forEach(child => {
-    if (child.nodeType === 1 && child.id !== 'app-root' && child.id !== 'install-gate-overlay' && child.id !== 'app-splash-screen' && !child.classList.contains('menu-dropdown-backdrop') && !child.classList.contains('menu-dropdown')) {
-      const st = window.getComputedStyle(child);
-      const isFixed = (st.position === 'fixed' || st.position === 'absolute');
-      
-      if (isFixed && st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
-        const rect = child.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
-          if (rect.bottom > maxBottom) {
-            maxBottom = rect.bottom;
-          }
-        }
-      }
-    }
-  });
-
-  document.documentElement.childNodes.forEach(child => {
-    if (child.tagName && child.tagName.toLowerCase() !== 'body' && child.tagName.toLowerCase() !== 'head') {
-      const st = window.getComputedStyle(child);
-      if (st.position === 'fixed' || st.position === 'absolute') {
-        const rect = child.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= 100 && rect.height > 10) {
-          if (rect.bottom > maxBottom) maxBottom = rect.bottom;
-        }
-      }
-    }
-  });
+  const elements = document.querySelectorAll('div, iframe');
+  
+  for (let i = 0; i < elements.length; i++) {
+     const el = elements[i];
+     if (el.closest('#app-root') || el.closest('#install-gate-overlay') || el.closest('#app-splash-screen')) continue;
+     
+     const st = window.getComputedStyle(el);
+     if (st.position === 'fixed' || st.position === 'absolute') {
+         if (st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
+             const rect = el.getBoundingClientRect();
+             if (rect.height > 10 && rect.height < (windowHeight * 0.5) && rect.top >= 0 && rect.top <= 100) {
+                 if (rect.bottom > maxBottom) {
+                     maxBottom = rect.bottom;
+                 }
+             }
+         }
+     }
+  }
 
   if (maxBottom > 0 && maxBottom < 400) {
-    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 4)}px`);
+    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 2)}px`);
   } else {
     document.documentElement.style.setProperty('--ad-offset', '0px');
   }
