@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v47 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v48 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v47";
+const CURRENT_APP_VERSION = "v48";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,14 +29,13 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & STRICT VIGNETTE AD TRACKER
+// 2. SPLASH AUTH, STRICT AD TRACKER & SEQUENTIAL INJECTION ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
 
-  // 1. Swap UI to stacked loading state immediately
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
@@ -44,12 +43,19 @@ function executeAppLogin() {
   let adDetected = false;
   let appRevealed = false;
 
+  // The comprehensive list of core app elements that MUST NOT be hidden
+  const safeIds = [
+    'app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta', 
+    'app-dropdown', 'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+    'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+    'notification-permission-modal', 'pin-modal'
+  ];
+
   const enterApp = () => {
     if (appRevealed) return;
     appRevealed = true;
 
-    // Destroy all Vignette DOM nodes to ensure it never returns inside the app
-    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
+    // SURGICAL ASSASSIN: Destroy only Monetag Vignette DOM nodes
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
         child.style.setProperty('display', 'none', 'important');
@@ -58,7 +64,6 @@ function executeAppLogin() {
       }
     });
 
-    // Fade out splash screen and reveal app dashboard
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
@@ -66,39 +71,39 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // Boot into Home Dashboard 
         showDashboard(); 
+
+        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN IS COMPLETE
+        if (!document.getElementById('monetag-inpage-beta')) {
+          const pushScript = document.createElement('script');
+          pushScript.id = 'monetag-inpage-beta';
+          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+          document.body.appendChild(pushScript);
+        }
       }, 400);
     }
   };
 
-  // 2. High-speed tracker: Wait for the ad to actually visually appear
   const trackerInterval = setInterval(() => {
     if (adDetected) return;
     
-    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
         const st = window.getComputedStyle(child);
-        // Vignettes trigger massive full-screen fixed divs with high z-index
         if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
           adDetected = true;
           clearInterval(trackerInterval);
-          
-          // Ad is on screen! Hold it for exactly 4.0 seconds, then assassinate it.
           setTimeout(enterApp, 4000);
         }
       }
     });
   }, 250);
 
-  // 3. INJECT EXACT VIGNETTE SNIPPET VERBATIM
-  const inlineVignette = document.createElement('script');
-  inlineVignette.id = 'monetag-vignette-beta';
-  inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-  document.body.appendChild(inlineVignette);
+  const vScript = document.createElement('script');
+  vScript.dataset.zone = '11928230';
+  vScript.src = 'https://n6wxm.com/vignette.min.js';
+  document.body.appendChild(vScript);
 
-  // 4. Failsafe: If network is slow or ad is blocked, force enter app after 8 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
@@ -1165,7 +1170,7 @@ function renderCustomerOrderHistory() {
     const dateStr = new Date(myOrder.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     
     const typeEmoji = myOrder.orderType === 'Delivery' ? '🚚' : '🥡';
-    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin-top: 6px; font-size: 0.85rem; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
+    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
         ${typeEmoji} ${myOrder.orderType} @ ${myOrder.scheduledTime}
     </div>`;
 
@@ -1590,7 +1595,7 @@ function listenForKitchenOrders() {
         <div class="order-header">
           <div>
             <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${myOrder.orderId}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
             <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
               👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
             </div>
@@ -1706,11 +1711,23 @@ function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
   const windowHeight = window.innerHeight;
   
+  const safeIds = [
+    'app-root', 'install-gate-overlay', 'app-splash-screen', 
+    'monetag-inpage-beta', 'monetag-vignette-beta', 'app-dropdown', 
+    'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+    'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+    'notification-permission-modal', 'pin-modal'
+  ];
+
   const elements = document.querySelectorAll('div, iframe');
   
   for (let i = 0; i < elements.length; i++) {
      const el = elements[i];
-     if (el.closest('#app-root') || el.closest('#install-gate-overlay') || el.closest('#app-splash-screen')) continue;
+     
+     // Do not flag our app containers, dropdowns, or modals as ads
+     if (el.closest('#app-root') || safeIds.includes(el.id) || el.classList.contains('app-dropdown') || el.classList.contains('app-dropdown-backdrop') || el.classList.contains('modal-overlay')) {
+       continue;
+     }
      
      const st = window.getComputedStyle(el);
      if (st.position === 'fixed' || st.position === 'absolute') {
