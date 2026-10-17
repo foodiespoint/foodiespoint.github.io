@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v45 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v46 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v45";
+const CURRENT_APP_VERSION = "v46";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,7 +29,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, STRICT AD TRACKER & SEQUENTIAL INJECTION ENGINE
+// 2. SPLASH AUTH & STRICT VIGNETTE AD TRACKER
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -49,7 +49,7 @@ function executeAppLogin() {
     appRevealed = true;
 
     // Destroy all Vignette DOM nodes to ensure it never returns inside the app
-    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta', 'monetag-vignette-beta'];
+    const safeIds = ['app-root', 'install-gate-overlay', 'app-splash-screen'];
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
         child.style.setProperty('display', 'none', 'important');
@@ -66,16 +66,8 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // Boot into Home Dashboard
+        // Boot into Home Dashboard (No In-Page Push injected)
         showDashboard(); 
-
-        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN IS COMPLETE
-        if (!document.getElementById('monetag-inpage-beta')) {
-          const pushScript = document.createElement('script');
-          pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-          document.body.appendChild(pushScript);
-        }
       }, 400);
     }
   };
@@ -1344,8 +1336,6 @@ function exitKitchenMode(triggerHistoryBack = true) {
   document.getElementById('kitchen-dropdown-items').style.display = 'none';
   
   checkAppOnboarding();
-  
-  // Return securely to the Home Dashboard
   showDashboard(false);
 
   if (db) {
@@ -1506,7 +1496,6 @@ function fetchAndRenderPaymentLedger() {
   });
 }
 
-// Ensure the physical back button works dynamically
 window.addEventListener('popstate', (e) => {
   if (isKitchenMode) {
     if (window.location.hash === '#kitchen') {
@@ -1515,7 +1504,6 @@ window.addEventListener('popstate', (e) => {
       exitKitchenMode(false);
     }
   } else {
-    // If popstate detected and we are inside customer flow
     if (e.state && e.state.page === 'dashboard') {
       showDashboard(false);
     }
@@ -1706,7 +1694,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
+// 17. OMNI-AD DETECTOR (RESTORED)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
