@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v46 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v47 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v46";
+const CURRENT_APP_VERSION = "v47";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -66,7 +66,7 @@ function executeAppLogin() {
         splash.style.display = 'none';
         checkAppOnboarding();
         
-        // Boot into Home Dashboard (No In-Page Push injected)
+        // Boot into Home Dashboard 
         showDashboard(); 
       }, 400);
     }
@@ -1165,7 +1165,7 @@ function renderCustomerOrderHistory() {
     const dateStr = new Date(myOrder.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     
     const typeEmoji = myOrder.orderType === 'Delivery' ? '🚚' : '🥡';
-    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
+    const deliveryStr = `<div style="font-weight: 600; color: #1565C0; margin-top: 6px; font-size: 0.85rem; background: #E3F2FD; display: inline-block; padding: 3px 8px; border-radius: 6px;">
         ${typeEmoji} ${myOrder.orderType} @ ${myOrder.scheduledTime}
     </div>`;
 
@@ -1279,8 +1279,10 @@ function enterKitchenMode() {
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
   // Toggle Dropdown Menu contents
-  document.getElementById('customer-dropdown-items').style.display = 'none';
-  document.getElementById('kitchen-dropdown-items').style.display = 'block';
+  const custMenu = document.getElementById('customer-dropdown-items');
+  const kitMenu = document.getElementById('kitchen-dropdown-items');
+  if(custMenu) custMenu.style.display = 'none';
+  if(kitMenu) kitMenu.style.display = 'block';
 
   document.getElementById('kitchen-view').style.display = 'flex';
   
@@ -1332,8 +1334,10 @@ function exitKitchenMode(triggerHistoryBack = true) {
   document.getElementById('kitchen-view').style.display = 'none';
   
   // Restore Dropdown Menu contents
-  document.getElementById('customer-dropdown-items').style.display = 'block';
-  document.getElementById('kitchen-dropdown-items').style.display = 'none';
+  const custMenu = document.getElementById('customer-dropdown-items');
+  const kitMenu = document.getElementById('kitchen-dropdown-items');
+  if(custMenu) custMenu.style.display = 'block';
+  if(kitMenu) kitMenu.style.display = 'none';
   
   checkAppOnboarding();
   showDashboard(false);
@@ -1496,6 +1500,7 @@ function fetchAndRenderPaymentLedger() {
   });
 }
 
+// Ensure the physical back button works dynamically
 window.addEventListener('popstate', (e) => {
   if (isKitchenMode) {
     if (window.location.hash === '#kitchen') {
@@ -1504,6 +1509,7 @@ window.addEventListener('popstate', (e) => {
       exitKitchenMode(false);
     }
   } else {
+    // If popstate detected and we are inside customer flow
     if (e.state && e.state.page === 'dashboard') {
       showDashboard(false);
     }
@@ -1694,7 +1700,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR (RESTORED)
+// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
 // ==========================================================================
 function evaluateCumulativeAdHeight() {
   let maxBottom = 0;
