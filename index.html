@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=49">
+  <link rel="manifest" href="/manifest.json?v=50">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -153,6 +153,7 @@
       top: 0;
       left: 0;
       right: 0;
+      bottom: 0;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -283,16 +284,6 @@
       justify-content: center;
       cursor: pointer;
       padding-bottom: 2px;
-    }
-
-    .version-badge-header {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #888;
-      background: #F0F0F0;
-      padding: 4px 8px;
-      border-radius: 12px;
-      display: none;
     }
 
     .section-title {
@@ -782,15 +773,6 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
 
-    .version-badge {
-      background: #E3F2FD;
-      color: #1565C0;
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
     .payment-summary-box {
       background: var(--white);
       border: 1px solid var(--border-color);
@@ -813,7 +795,7 @@
       z-index: 2600;
       min-width: 200px;
       overflow: hidden;
-      transition: top 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: top 0.35s ease;
     }
     
     .app-dropdown .dropdown-item {
@@ -923,14 +905,12 @@
   <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
     
-    <!-- TOP AREA: Swaps Title for Loading Stack -->
     <div class="splash-top-area">
       <div id="splash-header-text">
         <h1 class="splash-title">Foodies Point</h1>
         <p class="splash-tagline">Delicious Food, Made Fresh.</p>
       </div>
 
-      <!-- Loader (Stacked layout: Text on top, spinner below) -->
       <div id="splash-loader-box" class="splash-loading-box">
         <span class="splash-loading-text">Connecting to kitchen...</span>
         <div class="splash-loader"></div>
@@ -973,7 +953,6 @@
         <div class="app-title" id="main-app-title">Foodies Point</div>
 
         <div class="header-right-group">
-          <span id="version-badge-header" class="version-badge-header">v49-Beta</span>
           <!-- PERFECTLY CLEAN HAMBURGER ICON ONLY -->
           <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu">☰</button>
         </div>
@@ -1046,7 +1025,12 @@
 
       <!-- FULL PAGE MENU CONSOLE -->
       <section id="kitchen-view">
-        <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
+        <!-- VERSION BADGE IS NOW EXCLUSIVELY SHOWN HERE -->
+        <h2 class="section-title" style="margin: 4px 0 10px 0;">
+          Kitchen Console 
+          <span style="font-size: 0.75rem; background: #EAEAEA; color: #555; padding: 3px 8px; border-radius: 12px; margin-left: 8px; vertical-align: middle;">v50-Beta</span>
+        </h2>
+        
         <div class="kitchen-menu-actions">
           <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
@@ -1233,6 +1217,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=49"></script>
+  <script src="/app.js?v=50"></script>
 </body>
 </html>
