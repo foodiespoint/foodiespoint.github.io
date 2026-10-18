@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v52 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v53 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v52";
+const CURRENT_APP_VERSION = "v53";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -165,7 +165,7 @@ function openFestiveSpecial() {
 }
 
 // ==========================================================================
-// 3. SECRET SLIDE-TO-UNLOCK TITLE ENGINE
+// 3. SECRET SLIDE-TO-UNLOCK TITLE ENGINE (RIGHT-SLIDE WITH VISUAL CAP)
 // ==========================================================================
 function initSecretTitleSlider() {
   const titleElement = document.getElementById('main-app-title');
@@ -182,18 +182,19 @@ function initSecretTitleSlider() {
     if (isKitchenMode) return;
     const deltaX = e.touches[0].clientX - startX;
     
-    // Only allow sliding to the left (negative X)
-    if (deltaX < 0) {
-      currentX = deltaX;
-      titleElement.style.transform = `translateX(calc(-50% + ${deltaX}px))`;
+    // Only allow sliding to the right (positive X)
+    if (deltaX > 0) {
+      // Cap the visual slide distance at 85px to prevent sliding off screen
+      currentX = Math.min(deltaX, 85);
+      titleElement.style.transform = `translateX(calc(-50% + ${currentX}px))`;
     }
   }, { passive: true });
 
   titleElement.addEventListener('touchend', () => {
     if (isKitchenMode) return;
     
-    // If swiped more than 75px to the left, trigger the secret modal
-    if (currentX < -75) {
+    // If swiped more than 75px to the right, trigger the secret modal
+    if (currentX >= 75) {
       openKitchenPINModal();
     }
     
