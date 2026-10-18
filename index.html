@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=51">
+  <link rel="manifest" href="/manifest.json?v=52">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -245,6 +245,7 @@
       position: relative;
     }
 
+    /* Title acts as the secret slider */
     .app-title {
       font-size: 1.25rem;
       font-weight: 700;
@@ -253,6 +254,14 @@
       left: 50%;
       transform: translateX(-50%);
       white-space: nowrap;
+      user-select: none;
+      touch-action: pan-y;
+      cursor: grab;
+      padding: 10px;
+    }
+    
+    .app-title:active {
+      cursor: grabbing;
     }
 
     #kitchen-version-badge {
@@ -291,7 +300,7 @@
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--text-dark);
-      display: inline-flex;
+      display: none; /* Hidden on customer dashboards by default */
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -964,11 +973,12 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v51-Beta</span>
+          <span id="kitchen-version-badge">v52-Beta</span>
         </div>
 
         <div class="header-right-group">
-          <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu">☰</button>
+          <!-- HAMBURGER ICON ONLY SHOWN IN KITCHEN MODE NOW -->
+          <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu" style="display: none;">☰</button>
         </div>
       </header>
 
@@ -1085,11 +1095,6 @@
   <!-- UNIFIED APP DROPDOWN MENU & BACKDROP -->
   <div class="app-dropdown-backdrop" id="app-dropdown-backdrop" onclick="toggleAppDropdown(false)"></div>
   <div id="app-dropdown" class="app-dropdown">
-    <!-- Customer Default Items -->
-    <div id="customer-dropdown-items" style="display: block;">
-      <div class="dropdown-item" onclick="toggleAppDropdown(false); openAlertsModal();">🔔 Notifications</div>
-      <div class="dropdown-item" onclick="toggleAppDropdown(false); openKitchenPINModal();">👨‍🍳 Kitchen Console</div>
-    </div>
     <!-- Kitchen Default Items -->
     <div id="kitchen-dropdown-items" style="display: none;">
       <div class="dropdown-item" onclick="openKitchenOrdersPage()">📦 Live Incoming Orders</div>
@@ -1226,6 +1231,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=51"></script>
+  <script src="/app.js?v=52"></script>
 </body>
 </html>
