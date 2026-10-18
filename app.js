@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v51 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v52 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v51";
+const CURRENT_APP_VERSION = "v52";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -165,7 +165,47 @@ function openFestiveSpecial() {
 }
 
 // ==========================================================================
-// 3. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET ENGINE
+// 3. SECRET SLIDE-TO-UNLOCK TITLE ENGINE
+// ==========================================================================
+function initSecretTitleSlider() {
+  const titleElement = document.getElementById('main-app-title');
+  let startX = 0;
+  let currentX = 0;
+
+  titleElement.addEventListener('touchstart', (e) => {
+    if (isKitchenMode) return; // Disable slider if already inside kitchen
+    startX = e.touches[0].clientX;
+    titleElement.style.transition = 'none';
+  }, { passive: true });
+
+  titleElement.addEventListener('touchmove', (e) => {
+    if (isKitchenMode) return;
+    const deltaX = e.touches[0].clientX - startX;
+    
+    // Only allow sliding to the left (negative X)
+    if (deltaX < 0) {
+      currentX = deltaX;
+      titleElement.style.transform = `translateX(calc(-50% + ${deltaX}px))`;
+    }
+  }, { passive: true });
+
+  titleElement.addEventListener('touchend', () => {
+    if (isKitchenMode) return;
+    
+    // If swiped more than 75px to the left, trigger the secret modal
+    if (currentX < -75) {
+      openKitchenPINModal();
+    }
+    
+    // Snap back immediately smoothly
+    titleElement.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
+    titleElement.style.transform = `translateX(-50%)`;
+    currentX = 0;
+  });
+}
+
+// ==========================================================================
+// 4. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET ENGINE
 // ==========================================================================
 function isDuringBreakWindow() {
   const now = new Date();
@@ -197,7 +237,7 @@ function checkDaily6PMReset() {
 }
 
 // ==========================================================================
-// 4. MANDATORY APP ONBOARDING & FAIL-PROOF PUSH ENGINE
+// 5. MANDATORY APP ONBOARDING & FAIL-PROOF PUSH ENGINE
 // ==========================================================================
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -486,7 +526,7 @@ async function notifyKitchenNewOrder(orderData) {
 }
 
 // ==========================================================================
-// 5. SERVICE WORKER REGISTRATION 
+// 6. SERVICE WORKER REGISTRATION 
 // ==========================================================================
 let swRegistration = null;
 
@@ -519,7 +559,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================================================
-// 6. STANDALONE DETECTION & APP GATE ENGINE
+// 7. STANDALONE DETECTION & APP GATE ENGINE
 // ==========================================================================
 let deferredInstallPrompt = null;
 
@@ -574,7 +614,7 @@ function enforceInstallGate() {
 }
 
 // ==========================================================================
-// 7. COMPLETE FOODIES POINT MENU & DYNAMIC MANAGEMENT
+// 8. COMPLETE FOODIES POINT MENU & DYNAMIC MANAGEMENT
 // ==========================================================================
 const DEFAULT_MENU_ITEMS = [
   { id: 'dish-001', category: 'Rolls', name: 'Dahi Bread Roll (1 pc)', price: 15 },
@@ -802,7 +842,7 @@ function saveEditedItem() {
 }
 
 // ==========================================================================
-// 8. UNIFIED APP DROPDOWN MENU
+// 9. UNIFIED APP DROPDOWN MENU
 // ==========================================================================
 function toggleAppDropdown(forceState) {
   const dropdown = document.getElementById('app-dropdown');
@@ -822,7 +862,7 @@ function toggleAppDropdown(forceState) {
 }
 
 // ==========================================================================
-// 9. RENDER KITCHEN MENU
+// 10. RENDER KITCHEN MENU
 // ==========================================================================
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
@@ -911,7 +951,7 @@ function toggleOutOfStock(dishId) {
 }
 
 // ==========================================================================
-// 10. PUBLISH OR CLEAR DAILY LIVE MENU
+// 11. PUBLISH OR CLEAR DAILY LIVE MENU
 // ==========================================================================
 function publishDailyMenu() {
   if (!db) return alert("Database connection is not ready. Please refresh.");
@@ -953,7 +993,7 @@ function clearDailyMenu() {
 }
 
 // ==========================================================================
-// 11. CUSTOMER LIVE MENU LISTENER
+// 12. CUSTOMER LIVE MENU LISTENER
 // ==========================================================================
 function renderCustomerMenuFromSnapshot(activeIds) {
   const container = document.getElementById('customer-menu-container');
@@ -1037,7 +1077,7 @@ function updateQuantity(dishId, change) {
 }
 
 // ==========================================================================
-// 12. ORDER SUBMISSION ENGINE
+// 13. ORDER SUBMISSION ENGINE
 // ==========================================================================
 let pendingCustomerOrder = null;
 
@@ -1250,7 +1290,7 @@ function listenForCustomerOrderUpdates() {
 }
 
 // ==========================================================================
-// 13. KITCHEN LOGIN & NAVIGATION
+// 14. KITCHEN LOGIN & NAVIGATION
 // ==========================================================================
 const KITCHEN_PIN = "validatefoodies2026";
 let isKitchenMode = false;
@@ -1302,14 +1342,10 @@ function enterKitchenMode() {
 
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
-  // Show version badge ONLY in Kitchen Mode inside the header
+  // Show hamburger icon and version badge ONLY in Kitchen Mode
   document.getElementById('main-app-title-text').textContent = 'Foodies Point';
   document.getElementById('kitchen-version-badge').style.display = 'inline-block';
-  
-  const custMenu = document.getElementById('customer-dropdown-items');
-  const kitMenu = document.getElementById('kitchen-dropdown-items');
-  if(custMenu) custMenu.style.display = 'none';
-  if(kitMenu) kitMenu.style.display = 'block';
+  document.getElementById('header-main-menu-btn').style.display = 'inline-flex';
 
   document.getElementById('kitchen-view').style.display = 'flex';
   
@@ -1355,13 +1391,9 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('kitchen-view').style.display = 'none';
   
-  // Hide version badge when leaving Kitchen Mode
+  // Hide version badge and menu button when leaving Kitchen Mode
   document.getElementById('kitchen-version-badge').style.display = 'none';
-  
-  const custMenu = document.getElementById('customer-dropdown-items');
-  const kitMenu = document.getElementById('kitchen-dropdown-items');
-  if(custMenu) custMenu.style.display = 'block';
-  if(kitMenu) kitMenu.style.display = 'none';
+  document.getElementById('header-main-menu-btn').style.display = 'none';
   
   checkAppOnboarding();
   showDashboard(false);
@@ -1373,7 +1405,7 @@ function exitKitchenMode(triggerHistoryBack = true) {
 }
 
 // ==========================================================================
-// 14. DEDICATED KITCHEN SUB-PAGES
+// 15. DEDICATED KITCHEN SUB-PAGES
 // ==========================================================================
 function openKitchenOrdersPage() {
   toggleAppDropdown(false);
@@ -1539,7 +1571,7 @@ window.addEventListener('popstate', (e) => {
 });
 
 // ==========================================================================
-// 15. LIVE KITCHEN ORDER LISTENER
+// 16. LIVE KITCHEN ORDER LISTENER
 // ==========================================================================
 function listenForKitchenOrders() {
   if (!db) return;
@@ -1635,7 +1667,7 @@ function listenForKitchenOrders() {
 }
 
 // ==========================================================================
-// 16. TARGETED ORDER ACTIONS
+// 17. TARGETED ORDER ACTIONS
 // ==========================================================================
 let pendingAcceptance = null;
 
@@ -1722,10 +1754,11 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. INITIALIZE APP ON DOM READY
+// 18. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
+  initSecretTitleSlider();
   checkDaily6PMReset();
   
   updateCustomerPresence();
