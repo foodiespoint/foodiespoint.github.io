@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v50 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v51 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v50";
+const CURRENT_APP_VERSION = "v51";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -142,7 +142,6 @@ function showDashboard(pushToHistory = true) {
   document.getElementById('home-dashboard-view').style.display = 'flex';
   
   document.getElementById('header-back-btn').style.display = 'none';
-  document.getElementById('main-app-title').textContent = 'Foodies Point';
 
   if (pushToHistory) history.pushState({ page: 'dashboard' }, '', '#dashboard');
 }
@@ -155,7 +154,6 @@ function openLiveMenu(pushToHistory = true) {
   document.getElementById('customer-view').style.display = 'flex';
   
   document.getElementById('header-back-btn').style.display = 'inline-flex';
-  document.getElementById('main-app-title').textContent = 'Daily Menu';
 
   if (pushToHistory) history.pushState({ page: 'live-menu' }, '', '#live-menu');
 }
@@ -1302,6 +1300,11 @@ function enterKitchenMode() {
 
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
+  // Show version badge in the main header
+  const vBadge = document.getElementById('version-badge-header');
+  if (vBadge) vBadge.style.display = 'inline-block';
+  
+  // Toggle Dropdown Menu contents
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'none';
@@ -1351,6 +1354,11 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('kitchen-view').style.display = 'none';
   
+  // Hide version badge from the main header
+  const vBadge = document.getElementById('version-badge-header');
+  if (vBadge) vBadge.style.display = 'none';
+
+  // Restore Dropdown Menu contents
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'block';
