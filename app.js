@@ -142,6 +142,7 @@ function showDashboard(pushToHistory = true) {
   document.getElementById('home-dashboard-view').style.display = 'flex';
   
   document.getElementById('header-back-btn').style.display = 'none';
+  document.getElementById('main-app-title-text').textContent = 'Foodies Point';
 
   if (pushToHistory) history.pushState({ page: 'dashboard' }, '', '#dashboard');
 }
@@ -154,6 +155,7 @@ function openLiveMenu(pushToHistory = true) {
   document.getElementById('customer-view').style.display = 'flex';
   
   document.getElementById('header-back-btn').style.display = 'inline-flex';
+  document.getElementById('main-app-title-text').textContent = 'Daily Menu';
 
   if (pushToHistory) history.pushState({ page: 'live-menu' }, '', '#live-menu');
 }
@@ -1300,11 +1302,10 @@ function enterKitchenMode() {
 
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
-  // Show version badge in the main header
-  const vBadge = document.getElementById('version-badge-header');
-  if (vBadge) vBadge.style.display = 'inline-block';
+  // Show version badge ONLY in Kitchen Mode inside the header
+  document.getElementById('main-app-title-text').textContent = 'Foodies Point';
+  document.getElementById('kitchen-version-badge').style.display = 'inline-block';
   
-  // Toggle Dropdown Menu contents
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'none';
@@ -1354,11 +1355,9 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('kitchen-view').style.display = 'none';
   
-  // Hide version badge from the main header
-  const vBadge = document.getElementById('version-badge-header');
-  if (vBadge) vBadge.style.display = 'none';
-
-  // Restore Dropdown Menu contents
+  // Hide version badge when leaving Kitchen Mode
+  document.getElementById('kitchen-version-badge').style.display = 'none';
+  
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'block';
