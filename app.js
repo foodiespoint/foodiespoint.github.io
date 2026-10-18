@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v48 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v49 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v48";
+const CURRENT_APP_VERSION = "v49";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,7 +29,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH, STRICT AD TRACKER & SEQUENTIAL INJECTION ENGINE
+// 2. SPLASH AUTH & RUTHLESS VIGNETTE AD KILLER
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -43,9 +43,8 @@ function executeAppLogin() {
   let adDetected = false;
   let appRevealed = false;
 
-  // The comprehensive list of core app elements that MUST NOT be hidden
   const safeIds = [
-    'app-root', 'install-gate-overlay', 'app-splash-screen', 'monetag-inpage-beta', 
+    'app-root', 'install-gate-overlay', 'app-splash-screen',
     'app-dropdown', 'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
     'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
     'notification-permission-modal', 'pin-modal'
@@ -55,55 +54,71 @@ function executeAppLogin() {
     if (appRevealed) return;
     appRevealed = true;
 
-    // SURGICAL ASSASSIN: Destroy only Monetag Vignette DOM nodes
-    Array.from(document.body.children).forEach(child => {
-      if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-        child.style.setProperty('display', 'none', 'important');
-        child.style.setProperty('opacity', '0', 'important');
-        child.style.setProperty('pointer-events', 'none', 'important');
-      }
-    });
+    // RUTHLESS KILLER LOOP: Runs 10x a second forever to ensure Monetag NEVER comes back
+    setInterval(() => {
+      const killNodes = (parent) => {
+        Array.from(parent.children).forEach(child => {
+          if (['SCRIPT', 'STYLE', 'HEAD', 'BODY'].includes(child.tagName)) return;
+          if (safeIds.includes(child.id)) return;
+          
+          // If it's an uninvited ad container, crush it instantly
+          child.style.setProperty('display', 'none', 'important');
+          child.style.setProperty('opacity', '0', 'important');
+          child.style.setProperty('pointer-events', 'none', 'important');
+          child.style.setProperty('z-index', '-9999', 'important');
+          child.style.setProperty('width', '0px', 'important');
+          child.style.setProperty('height', '0px', 'important');
+        });
+      };
+      killNodes(document.body);
+      killNodes(document.documentElement);
+    }, 100);
 
+    // Fade out splash screen and reveal app dashboard safely
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
         checkAppOnboarding();
-        
         showDashboard(); 
-
-        // INJECT IN-PAGE PUSH EXACTLY ONCE AFTER LOGIN IS COMPLETE
-        if (!document.getElementById('monetag-inpage-beta')) {
-          const pushScript = document.createElement('script');
-          pushScript.id = 'monetag-inpage-beta';
-          pushScript.innerHTML = `(function(s){s.dataset.zone='11879957',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-          document.body.appendChild(pushScript);
-        }
       }, 400);
     }
   };
 
+  // High-speed tracker: Wait for the ad to actually visually appear anywhere in the DOM
   const trackerInterval = setInterval(() => {
     if (adDetected) return;
     
-    Array.from(document.body.children).forEach(child => {
-      if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
-        const st = window.getComputedStyle(child);
-        if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
-          adDetected = true;
-          clearInterval(trackerInterval);
-          setTimeout(enterApp, 4000);
+    const checkNodes = (parent) => {
+      Array.from(parent.children).forEach(child => {
+        if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
+          const st = window.getComputedStyle(child);
+          // Vignettes trigger massive full-screen fixed divs with high z-index
+          if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
+            adDetected = true;
+          }
         }
-      }
-    });
+      });
+    };
+
+    checkNodes(document.body);
+    checkNodes(document.documentElement);
+
+    if (adDetected) {
+      clearInterval(trackerInterval);
+      // Ad is on screen! Hold it for exactly 4.0 seconds to register impression, then annihilate it.
+      setTimeout(enterApp, 4000);
+    }
   }, 250);
 
-  const vScript = document.createElement('script');
-  vScript.dataset.zone = '11928230';
-  vScript.src = 'https://n6wxm.com/vignette.min.js';
-  document.body.appendChild(vScript);
+  // INJECT EXACT VIGNETTE SNIPPET VERBATIM
+  const inlineVignette = document.createElement('script');
+  inlineVignette.id = 'monetag-vignette-beta';
+  inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+  document.body.appendChild(inlineVignette);
 
+  // Failsafe: If network is slow or ad is blocked entirely, force enter app after 8 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
@@ -1283,7 +1298,6 @@ function enterKitchenMode() {
 
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
-  // Toggle Dropdown Menu contents
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'none';
@@ -1312,18 +1326,13 @@ function handleHeaderBack() {
   const payPage = document.getElementById('payment-details-view');
   const ordersPage = document.getElementById('kitchen-orders-view');
   
-  // If in Kitchen Mode subpages
   if ((custPage && custPage.style.display === 'flex') || 
       (payPage && payPage.style.display === 'flex') || 
       (ordersPage && ordersPage.style.display === 'flex')) {
     closeKitchenSubPage(true);
-  } 
-  // If in standard Customer Live Menu view (return to dashboard)
-  else if (!isKitchenMode && currentAppView === 'live-menu') {
+  } else if (!isKitchenMode && currentAppView === 'live-menu') {
     showDashboard(true);
-  }
-  // Exit Kitchen mode back to dashboard
-  else {
+  } else {
     exitKitchenMode(true);
   }
 }
@@ -1338,7 +1347,6 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('kitchen-view').style.display = 'none';
   
-  // Restore Dropdown Menu contents
   const custMenu = document.getElementById('customer-dropdown-items');
   const kitMenu = document.getElementById('kitchen-dropdown-items');
   if(custMenu) custMenu.style.display = 'block';
@@ -1505,7 +1513,6 @@ function fetchAndRenderPaymentLedger() {
   });
 }
 
-// Ensure the physical back button works dynamically
 window.addEventListener('popstate', (e) => {
   if (isKitchenMode) {
     if (window.location.hash === '#kitchen') {
@@ -1514,7 +1521,6 @@ window.addEventListener('popstate', (e) => {
       exitKitchenMode(false);
     }
   } else {
-    // If popstate detected and we are inside customer flow
     if (e.state && e.state.page === 'dashboard') {
       showDashboard(false);
     }
@@ -1705,68 +1711,7 @@ async function removeTicket(firebaseKey) {
 }
 
 // ==========================================================================
-// 17. OMNI-AD DETECTOR & DEEP SHIFTER ENGINE (KEEPS APP CLEAR)
-// ==========================================================================
-function evaluateCumulativeAdHeight() {
-  let maxBottom = 0;
-  const windowHeight = window.innerHeight;
-  
-  const safeIds = [
-    'app-root', 'install-gate-overlay', 'app-splash-screen', 
-    'monetag-inpage-beta', 'monetag-vignette-beta', 'app-dropdown', 
-    'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
-    'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
-    'notification-permission-modal', 'pin-modal'
-  ];
-
-  const elements = document.querySelectorAll('div, iframe');
-  
-  for (let i = 0; i < elements.length; i++) {
-     const el = elements[i];
-     
-     // Do not flag our app containers, dropdowns, or modals as ads
-     if (el.closest('#app-root') || safeIds.includes(el.id) || el.classList.contains('app-dropdown') || el.classList.contains('app-dropdown-backdrop') || el.classList.contains('modal-overlay')) {
-       continue;
-     }
-     
-     const st = window.getComputedStyle(el);
-     if (st.position === 'fixed' || st.position === 'absolute') {
-         if (st.display !== 'none' && parseFloat(st.opacity || '1') > 0.01) {
-             const rect = el.getBoundingClientRect();
-             if (rect.height > 10 && rect.height < (windowHeight * 0.5) && rect.top >= 0 && rect.top <= 100) {
-                 if (rect.bottom > maxBottom) {
-                     maxBottom = rect.bottom;
-                 }
-             }
-         }
-     }
-  }
-
-  if (maxBottom > 0 && maxBottom < 400) {
-    document.documentElement.style.setProperty('--ad-offset', `${Math.round(maxBottom + 2)}px`);
-  } else {
-    document.documentElement.style.setProperty('--ad-offset', '0px');
-  }
-}
-
-const adObserver = new MutationObserver(() => {
-  evaluateCumulativeAdHeight();
-});
-
-setInterval(evaluateCumulativeAdHeight, 400);
-
-document.addEventListener("DOMContentLoaded", () => {
-  adObserver.observe(document.body, { 
-    childList: true, 
-    subtree: true, 
-    attributes: true, 
-    attributeFilter: ['style', 'class'] 
-  });
-  evaluateCumulativeAdHeight();
-});
-
-// ==========================================================================
-// 18. INITIALIZE APP ON DOM READY
+// 17. INITIALIZE APP ON DOM READY
 // ==========================================================================
 function initFoodiesPoint() {
   enforceInstallGate();
