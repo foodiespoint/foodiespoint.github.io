@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v49 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v50 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v49";
+const CURRENT_APP_VERSION = "v50";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,7 +29,7 @@ try {
 }
 
 // ==========================================================================
-// 2. SPLASH AUTH & RUTHLESS VIGNETTE AD KILLER
+// 2. SPLASH AUTH & RUTHLESS VIGNETTE AD PURGE ENGINE
 // ==========================================================================
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
@@ -54,24 +54,28 @@ function executeAppLogin() {
     if (appRevealed) return;
     appRevealed = true;
 
-    // RUTHLESS KILLER LOOP: Runs 10x a second forever to ensure Monetag NEVER comes back
-    setInterval(() => {
-      const killNodes = (parent) => {
-        Array.from(parent.children).forEach(child => {
-          if (['SCRIPT', 'STYLE', 'HEAD', 'BODY'].includes(child.tagName)) return;
-          if (safeIds.includes(child.id)) return;
-          
-          // If it's an uninvited ad container, crush it instantly
-          child.style.setProperty('display', 'none', 'important');
-          child.style.setProperty('opacity', '0', 'important');
-          child.style.setProperty('pointer-events', 'none', 'important');
-          child.style.setProperty('z-index', '-9999', 'important');
-          child.style.setProperty('width', '0px', 'important');
-          child.style.setProperty('height', '0px', 'important');
-        });
-      };
-      killNodes(document.body);
-      killNodes(document.documentElement);
+    // RUTHLESS PURGE: Physically remove the ad nodes from the DOM so they cannot persist
+    const purgeAds = () => {
+      Array.from(document.body.children).forEach(child => {
+        if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+          child.remove();
+        }
+      });
+      Array.from(document.documentElement.children).forEach(child => {
+        if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
+          child.remove();
+        }
+      });
+    };
+
+    purgeAds();
+    
+    // Run the purge 10 times a second for 2 seconds to catch any delayed ad re-injections
+    let purgeCount = 0;
+    const purgeInterval = setInterval(() => {
+      purgeAds();
+      purgeCount++;
+      if (purgeCount > 20) clearInterval(purgeInterval);
     }, 100);
 
     // Fade out splash screen and reveal app dashboard safely
@@ -107,8 +111,8 @@ function executeAppLogin() {
 
     if (adDetected) {
       clearInterval(trackerInterval);
-      // Ad is on screen! Hold it for exactly 4.0 seconds to register impression, then annihilate it.
-      setTimeout(enterApp, 4000);
+      // Ad is on screen! Hold it for exactly 4.5 seconds to register impression, then annihilate it.
+      setTimeout(enterApp, 4500);
     }
   }, 250);
 
