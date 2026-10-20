@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v53 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v54 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v53";
+const CURRENT_APP_VERSION = "v54";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -35,10 +35,18 @@ function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
   const headerText = document.getElementById('splash-header-text');
+  const splash = document.getElementById('app-splash-screen');
 
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
+
+  // Make splash background transparent & immediately show the app underneath
+  if (splash) {
+    splash.style.setProperty('background', 'transparent', 'important');
+    splash.style.setProperty('pointer-events', 'none', 'important');
+  }
+  showDashboard();
 
   let adDetected = false;
   let appRevealed = false;
@@ -50,11 +58,23 @@ function executeAppLogin() {
     'notification-permission-modal', 'pin-modal'
   ];
 
+  // Neutralize any dark veil or blur filter injected by the ad
+  const stripAdOverlays = () => {
+    Array.from(document.body.children).forEach(child => {
+      if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
+        child.style.setProperty('background', 'transparent', 'important');
+        child.style.setProperty('background-color', 'transparent', 'important');
+        child.style.setProperty('backdrop-filter', 'none', 'important');
+        child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+      }
+    });
+  };
+
   const enterApp = () => {
     if (appRevealed) return;
     appRevealed = true;
 
-    // RUTHLESS PURGE: Physically remove the ad nodes from the DOM so they cannot persist
+    // Physically purge ad nodes from the DOM
     const purgeAds = () => {
       Array.from(document.body.children).forEach(child => {
         if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
@@ -70,7 +90,6 @@ function executeAppLogin() {
 
     purgeAds();
     
-    // Run the purge 10 times a second for 2 seconds to catch any delayed ad re-injections
     let purgeCount = 0;
     const purgeInterval = setInterval(() => {
       purgeAds();
@@ -78,27 +97,25 @@ function executeAppLogin() {
       if (purgeCount > 20) clearInterval(purgeInterval);
     }, 100);
 
-    // Fade out splash screen and reveal app dashboard safely
-    const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
         checkAppOnboarding();
-        showDashboard(); 
-      }, 400);
+      }, 300);
     }
   };
 
-  // High-speed tracker: Wait for the ad to actually visually appear anywhere in the DOM
+  // High-speed tracker: Watch for ad appearance & strip dark films continuously
   const trackerInterval = setInterval(() => {
+    stripAdOverlays();
+
     if (adDetected) return;
     
     const checkNodes = (parent) => {
       Array.from(parent.children).forEach(child => {
         if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
           const st = window.getComputedStyle(child);
-          // Vignettes trigger massive full-screen fixed divs with high z-index
           if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
             adDetected = true;
           }
@@ -111,18 +128,18 @@ function executeAppLogin() {
 
     if (adDetected) {
       clearInterval(trackerInterval);
-      // Ad is on screen! Hold it for exactly 4.5 seconds to register impression, then annihilate it.
-      setTimeout(enterApp, 4500);
+      // Hold ad for exactly 3.5 seconds
+      setTimeout(enterApp, 3500);
     }
-  }, 250);
+  }, 150);
 
-  // INJECT EXACT VIGNETTE SNIPPET VERBATIM
+  // Inject Monetag Vignette snippet
   const inlineVignette = document.createElement('script');
   inlineVignette.id = 'monetag-vignette-beta';
   inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
   document.body.appendChild(inlineVignette);
 
-  // Failsafe: If network is slow or ad is blocked entirely, force enter app after 8 seconds
+  // Network / AdBlock failsafe (8s)
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
@@ -173,7 +190,7 @@ function initSecretTitleSlider() {
   let currentX = 0;
 
   titleElement.addEventListener('touchstart', (e) => {
-    if (isKitchenMode) return; // Disable slider if already inside kitchen
+    if (isKitchenMode) return;
     startX = e.touches[0].clientX;
     titleElement.style.transition = 'none';
   }, { passive: true });
@@ -182,9 +199,7 @@ function initSecretTitleSlider() {
     if (isKitchenMode) return;
     const deltaX = e.touches[0].clientX - startX;
     
-    // Only allow sliding to the right (positive X)
     if (deltaX > 0) {
-      // Cap the visual slide distance at 85px to prevent sliding off screen
       currentX = Math.min(deltaX, 85);
       titleElement.style.transform = `translateX(calc(-50% + ${currentX}px))`;
     }
@@ -193,12 +208,10 @@ function initSecretTitleSlider() {
   titleElement.addEventListener('touchend', () => {
     if (isKitchenMode) return;
     
-    // If swiped more than 75px to the right, trigger the secret modal
     if (currentX >= 75) {
       openKitchenPINModal();
     }
     
-    // Snap back immediately smoothly
     titleElement.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
     titleElement.style.transform = `translateX(-50%)`;
     currentX = 0;
@@ -1343,7 +1356,6 @@ function enterKitchenMode() {
 
   document.getElementById('header-back-btn').style.display = 'inline-flex';
   
-  // Show hamburger icon and version badge ONLY in Kitchen Mode
   document.getElementById('main-app-title-text').textContent = 'Foodies Point';
   document.getElementById('kitchen-version-badge').style.display = 'inline-block';
   document.getElementById('header-main-menu-btn').style.display = 'inline-flex';
@@ -1392,7 +1404,6 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   document.getElementById('kitchen-view').style.display = 'none';
   
-  // Hide version badge and menu button when leaving Kitchen Mode
   document.getElementById('kitchen-version-badge').style.display = 'none';
   document.getElementById('header-main-menu-btn').style.display = 'none';
   
