@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v54 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v55 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v54";
+const CURRENT_APP_VERSION = "v55";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -41,12 +41,11 @@ function executeAppLogin() {
   if (headerText) headerText.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // Make splash background transparent & immediately show the app underneath
+  // Ensure splash screen remains crisp, solid white with no transparency
   if (splash) {
-    splash.style.setProperty('background', 'transparent', 'important');
-    splash.style.setProperty('pointer-events', 'none', 'important');
+    splash.style.setProperty('background', '#FFFFFF', 'important');
+    splash.style.setProperty('opacity', '1', 'important');
   }
-  showDashboard();
 
   let adDetected = false;
   let appRevealed = false;
@@ -58,14 +57,21 @@ function executeAppLogin() {
     'notification-permission-modal', 'pin-modal'
   ];
 
-  // Neutralize any dark veil or blur filter injected by the ad
+  // Strip dark tint and blur filters from ad backdrops so white screen stays clean
   const stripAdOverlays = () => {
     Array.from(document.body.children).forEach(child => {
       if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
-        child.style.setProperty('background', 'transparent', 'important');
-        child.style.setProperty('background-color', 'transparent', 'important');
-        child.style.setProperty('backdrop-filter', 'none', 'important');
-        child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        const st = window.getComputedStyle(child);
+        if (st.position === 'fixed' || st.position === 'absolute') {
+          child.style.setProperty('backdrop-filter', 'none', 'important');
+          child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+          
+          // Clear any dark veil applied by Monetag over the screen
+          if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
+            child.style.setProperty('background', 'transparent', 'important');
+            child.style.setProperty('background-color', 'transparent', 'important');
+          }
+        }
       }
     });
   };
@@ -97,16 +103,18 @@ function executeAppLogin() {
       if (purgeCount > 20) clearInterval(purgeInterval);
     }, 100);
 
+    // Fade out splash screen and reveal app dashboard
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
         splash.style.display = 'none';
         checkAppOnboarding();
-      }, 300);
+        showDashboard();
+      }, 400);
     }
   };
 
-  // High-speed tracker: Watch for ad appearance & strip dark films continuously
+  // High-speed tracker: Watch for ad appearance, keep background clear of dark overlays
   const trackerInterval = setInterval(() => {
     stripAdOverlays();
 
@@ -131,7 +139,7 @@ function executeAppLogin() {
       // Hold ad for exactly 3.5 seconds
       setTimeout(enterApp, 3500);
     }
-  }, 150);
+  }, 100);
 
   // Inject Monetag Vignette snippet
   const inlineVignette = document.createElement('script');
