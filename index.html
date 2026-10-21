@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=58">
+  <link rel="manifest" href="/manifest.json?v=59">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -63,31 +63,34 @@
       pointer-events: none;
     }
 
-    /* TOP AREA: Logo & Title Beside Each Other */
+    /* TOP AREA: Logo & Text Beside Each Other */
     #splash-header-box {
       position: absolute;
       top: 10%; 
       left: 0;
       width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+      justify-content: center;
       padding: 0 20px;
     }
 
-    .splash-logo-title-row {
+    .splash-brand-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 6px;
+      gap: 14px;
     }
 
     #splash-logo {
-      width: 52px;
+      width: 58px;
       height: auto;
+    }
+
+    .splash-text-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
     }
 
     .splash-title {
@@ -95,13 +98,15 @@
       font-size: 2.2rem;
       font-weight: 800;
       letter-spacing: -0.5px;
-      margin: 0; 
+      margin: 0;
+      line-height: 1.1;
     }
 
     .splash-tagline {
       color: #666;
       font-size: 0.95rem;
       font-weight: 500;
+      margin: 4px 0 0 0;
     }
 
     /* LOADING SPINNER BOX (Exactly 25% from Top) */
@@ -262,6 +267,7 @@
       position: relative;
     }
 
+    /* Title acts as the secret slider */
     .app-title {
       font-size: 1.25rem;
       font-weight: 700;
@@ -316,7 +322,7 @@
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--text-dark);
-      display: none;
+      display: none; /* Hidden on customer dashboards by default */
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -942,11 +948,13 @@
     
     <!-- TITLE & LOGO AT THE TOP -->
     <div id="splash-header-box">
-      <div class="splash-logo-title-row">
+      <div class="splash-brand-row">
         <img id="splash-logo" src="/icon.png" alt="Foodies Point Logo">
-        <h1 class="splash-title">Foodies Point</h1>
+        <div class="splash-text-col">
+          <h1 class="splash-title">Foodies Point</h1>
+          <p class="splash-tagline">Delicious Food, Made Fresh.</p>
+        </div>
       </div>
-      <p class="splash-tagline">Delicious Food, Made Fresh.</p>
     </div>
 
     <!-- LOADER IN THE TOP THIRD (Hidden by default) -->
@@ -991,7 +999,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v58-Beta</span>
+          <span id="kitchen-version-badge">v59-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1248,6 +1256,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=58"></script>
+  <script src="/app.js?v=59"></script>
 </body>
 </html>
