@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=62">
+  <link rel="manifest" href="/manifest.json?v=63">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -116,31 +116,27 @@
       margin: 4px 0 0 0;
     }
 
-    /* LOADING SPINNER BOXES */
+    /* LOADING SPINNER BOXES - Starts Centered */
     .splash-loader-box {
       position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
       left: 0;
       width: 100%;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 16px;
+      transition: top 0s, transform 0s;
     }
 
-    /* Login loader permanently at 25% */
     #splash-loader-box {
       display: none; 
-      top: 25%;
     }
 
-    /* Menu transition loader defaults to center, snaps to 25% dynamically */
-    #menu-splash-loader-box {
-      display: flex; 
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    #menu-splash-loader-box.ad-snapped {
+    /* Snaps dynamically to 25% from top when ad appears */
+    .splash-loader-box.ad-snapped {
       top: 25%;
       transform: none;
     }
@@ -980,7 +976,7 @@
       </div>
     </div>
 
-    <!-- LOADER IN THE TOP QUARTER (Exactly 25% Top) -->
+    <!-- LOADER BOX: Starts Centered, Snaps to Top 25% -->
     <div id="splash-loader-box" class="splash-loader-box">
       <span class="splash-loading-text">Connecting to kitchen...</span>
       <div class="splash-loader"></div>
@@ -998,7 +994,7 @@
     <!-- Clean white screen: NO logo or title in this transition -->
 
     <!-- LOADER STARTS DEAD CENTER, SNAPS TO 25% TOP WHEN AD APPEARS -->
-    <div id="menu-splash-loader-box" class="splash-loader-box">
+    <div id="menu-splash-loader-box" class="splash-loader-box" style="display:flex;">
       <span class="splash-loading-text">Loading Live Menu...</span>
       <div class="splash-loader"></div>
     </div>
@@ -1033,7 +1029,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v62-Beta</span>
+          <span id="kitchen-version-badge">v63-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1290,6 +1286,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=62"></script>
+  <script src="/app.js?v=63"></script>
 </body>
 </html>
