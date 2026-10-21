@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v62 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v63 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v62";
+const CURRENT_APP_VERSION = "v63";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -46,7 +46,10 @@ function executeAppLogin() {
 
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerBox) headerBox.style.display = 'none';
-  if (loaderBox) loaderBox.style.display = 'flex';
+  if (loaderBox) {
+    loaderBox.style.display = 'flex';
+    loaderBox.classList.remove('ad-snapped'); // Ensure it starts perfectly centered
+  }
 
   if (splash) {
     splash.style.setProperty('background', '#FFFFFF', 'important');
@@ -127,6 +130,9 @@ function executeAppLogin() {
     checkNodes(document.documentElement);
 
     if (adDetected) {
+      // Snap loader up immediately when ad is found
+      if (loaderBox) loaderBox.classList.add('ad-snapped');
+      
       clearInterval(trackerInterval);
       setTimeout(enterApp, 3500);
     }
@@ -146,7 +152,7 @@ function executeAppLogin() {
 }
 
 // ==========================================================================
-// 2B. INTERNAL MENU TRANSITION AD ENGINE (IFRAME SANDBOX)
+// 2B. INTERNAL MENU TRANSITION AD ENGINE
 // ==========================================================================
 function triggerMenuAdTransition() {
   const transSplash = document.getElementById('menu-transition-splash');
@@ -165,34 +171,30 @@ function triggerMenuAdTransition() {
   let adDetected = false;
   let transitionDone = false;
 
-  // Create isolated sandboxed iframe with the dedicated LIVE MENU zone ID (12091985)
-  const adIframe = document.createElement('iframe');
-  adIframe.id = 'menu-ad-iframe';
-  adIframe.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100005; border:none; background:transparent; pointer-events:auto;';
-  document.body.appendChild(adIframe);
-
-  const frameDoc = adIframe.contentWindow.document;
-  frameDoc.open();
-  frameDoc.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          body { margin: 0; padding: 0; overflow: hidden; background: transparent !important; }
-        </style>
-      </head>
-      <body>
-        <script>(function(s){s.dataset.zone='12091985',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))<\/script>
-      </body>
-    </html>
-  `);
-  frameDoc.close();
-
   const completeTransition = () => {
     if (transitionDone) return;
     transitionDone = true;
 
-    if (adIframe) adIframe.remove();
+    const purgeAllAds = () => {
+      Array.from(document.body.children).forEach(child => {
+        if (!DOM_SAFE_IDS.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+          child.remove();
+        }
+      });
+      Array.from(document.documentElement.children).forEach(child => {
+        if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
+          child.remove();
+        }
+      });
+    };
+
+    purgeAllAds();
+    let purgeCount = 0;
+    const purgeInterval = setInterval(() => {
+      purgeAllAds();
+      purgeCount++;
+      if (purgeCount > 20) clearInterval(purgeInterval);
+    }, 100);
 
     if (transSplash) {
       transSplash.classList.add('fade-out');
@@ -203,40 +205,62 @@ function triggerMenuAdTransition() {
     }
   };
 
+  const stripAdOverlays = () => {
+    Array.from(document.body.children).forEach(child => {
+      if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
+        const st = window.getComputedStyle(child);
+        if (st.position === 'fixed' || st.position === 'absolute') {
+          child.style.setProperty('backdrop-filter', 'none', 'important');
+          child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+          
+          if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
+            child.style.setProperty('background', 'transparent', 'important');
+            child.style.setProperty('background-color', 'transparent', 'important');
+          }
+        }
+      }
+    });
+  };
+
   const trackerInterval = setInterval(() => {
     if (transitionDone) return clearInterval(trackerInterval);
 
-    try {
-      const fDoc = adIframe.contentWindow.document;
-      Array.from(fDoc.body.children).forEach(child => {
-        if (child.tagName === 'DIV') {
-          const st = fDoc.defaultView.getComputedStyle(child);
-          
-          if (st.position === 'fixed' || st.position === 'absolute') {
-            child.style.setProperty('backdrop-filter', 'none', 'important');
-            child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-            if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
-              child.style.setProperty('background', 'transparent', 'important');
-              child.style.setProperty('background-color', 'transparent', 'important');
+    stripAdOverlays();
+
+    if (!adDetected) {
+      const checkNodes = (parent) => {
+        Array.from(parent.children).forEach(child => {
+          if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
+            const st = window.getComputedStyle(child);
+            if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
+              adDetected = true;
             }
           }
+        });
+      };
 
-          if (!adDetected && (st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
-            adDetected = true;
-            
-            // Ad detected: snap loader from center to top immediately
-            if (menuLoader) {
-              menuLoader.classList.add('ad-snapped');
-            }
+      checkNodes(document.body);
+      checkNodes(document.documentElement);
 
-            clearInterval(trackerInterval);
-            setTimeout(completeTransition, 3500);
-          }
+      if (adDetected) {
+        // Ad detected: snap loader from center to top 25% immediately
+        if (menuLoader) {
+          menuLoader.classList.add('ad-snapped');
         }
-      });
-    } catch(e) {}
+
+        clearInterval(trackerInterval);
+        setTimeout(completeTransition, 3500);
+      }
+    }
   }, 100);
 
+  // Inject DIRECTLY into DOM so the user click correctly validates the ad
+  const inlineVignette = document.createElement('script');
+  inlineVignette.id = 'monetag-vignette-beta-menu-' + Date.now();
+  inlineVignette.innerHTML = `(function(s){s.dataset.zone='12091985',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+  document.body.appendChild(inlineVignette);
+
+  // Faster Failsafe: if Monetag is blocked or refuses to serve an ad, transition after 5 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
@@ -1654,7 +1678,7 @@ function fetchAndRenderPaymentLedger() {
 
       row.innerHTML = `
         <div style="flex: 1;">
-          <div style="font-size:0.9rem; font-weight: 700; color:#2D2D2D;">${dateStr} <span style="font-weight: normal; color: #888; font-size: 0.75rem; margin-left: 4px;">(#${order.orderId})</span></div>
+          <div style="font-size:0.9rem; font-weight: 700; color:#2D2D2D;">${dateStr} <span style="font-weight: normal; color: #888; font-size: 0.75margin-left: 4px;">(#${order.orderId})</span></div>
           <div style="font-size: 0.95rem; color: #D9534F; font-weight: 700; margin: 4px 0;">${totalDisplay}</div>
           <div style="font-size:0.8rem; color:#666;">👤 ${order.customerName || 'Guest'} (${order.customerMobile || 'N/A'})</div>
         </div>
