@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=59">
+  <link rel="manifest" href="/manifest.json?v=60">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -48,8 +48,7 @@
     }
 
     /* SPLASH / LANDING SCREEN - Pure solid white */
-    #app-splash-screen {
-      display: none; 
+    #app-splash-screen, #menu-transition-splash {
       position: fixed;
       inset: 0;
       background: var(--white);
@@ -57,14 +56,22 @@
       transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
-    #app-splash-screen.fade-out {
+    #app-splash-screen {
+      display: none; 
+    }
+
+    #menu-transition-splash {
+      display: none;
+    }
+
+    #app-splash-screen.fade-out, #menu-transition-splash.fade-out {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
 
     /* TOP AREA: Logo & Text Beside Each Other */
-    #splash-header-box {
+    .splash-header-box {
       position: absolute;
       top: 10%; 
       left: 0;
@@ -81,7 +88,7 @@
       gap: 14px;
     }
 
-    #splash-logo {
+    .splash-logo {
       width: 58px;
       height: auto;
     }
@@ -110,8 +117,7 @@
     }
 
     /* LOADING SPINNER BOX (Exactly 25% from Top) */
-    #splash-loader-box {
-      display: none; 
+    .splash-loader-box {
       position: absolute;
       top: 25%;
       left: 0;
@@ -120,6 +126,14 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
+    }
+
+    #splash-loader-box {
+      display: none; 
+    }
+
+    #menu-splash-loader-box {
+      display: flex; /* Always visible for internal transitions */
     }
 
     .splash-loader {
@@ -947,9 +961,9 @@
   <div id="app-splash-screen">
     
     <!-- TITLE & LOGO AT THE TOP -->
-    <div id="splash-header-box">
+    <div id="splash-header-box" class="splash-header-box">
       <div class="splash-brand-row">
-        <img id="splash-logo" src="/icon.png" alt="Foodies Point Logo">
+        <img id="splash-logo" class="splash-logo" src="/icon.png" alt="Foodies Point Logo">
         <div class="splash-text-col">
           <h1 class="splash-title">Foodies Point</h1>
           <p class="splash-tagline">Delicious Food, Made Fresh.</p>
@@ -958,7 +972,7 @@
     </div>
 
     <!-- LOADER IN THE TOP THIRD (Hidden by default) -->
-    <div id="splash-loader-box">
+    <div id="splash-loader-box" class="splash-loader-box">
       <span class="splash-loading-text">Connecting to kitchen...</span>
       <div class="splash-loader"></div>
     </div>
@@ -968,6 +982,24 @@
       Login & Enter
     </a>
 
+  </div>
+
+  <!-- INTERNAL MENU AD TRANSITION SPLASH -->
+  <div id="menu-transition-splash">
+    <div class="splash-header-box">
+      <div class="splash-brand-row">
+        <img class="splash-logo" src="/icon.png" alt="Foodies Point Logo">
+        <div class="splash-text-col">
+          <h1 class="splash-title">Foodies Point</h1>
+          <p class="splash-tagline">Delicious Food, Made Fresh.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="menu-splash-loader-box" class="splash-loader-box">
+      <span class="splash-loading-text">Loading Live Menu...</span>
+      <div class="splash-loader"></div>
+    </div>
   </div>
 
   <!-- IRREMOVABLE INSTALL GATE OVERLAY -->
@@ -999,7 +1031,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v59-Beta</span>
+          <span id="kitchen-version-badge">v60-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1016,8 +1048,8 @@
         </div>
 
         <div class="dash-grid">
-          <!-- Button 1: Live Menu -->
-          <div class="dash-card" onclick="openLiveMenu()">
+          <!-- Button 1: Live Menu (TRIGGERS AD TRANSITION) -->
+          <div class="dash-card" onclick="triggerMenuAdTransition()">
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
               <h3>Daily Live Menu</h3>
@@ -1256,6 +1288,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=59"></script>
+  <script src="/app.js?v=60"></script>
 </body>
 </html>
