@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=56">
+  <link rel="manifest" href="/manifest.json?v=57">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -74,6 +74,13 @@
       align-items: center;
       text-align: center;
       padding: 0 20px;
+    }
+
+    /* Constrain logo size to match title proportionality */
+    #splash-logo {
+      width: 70px;
+      height: auto;
+      margin-bottom: 10px;
     }
 
     .splash-title {
@@ -248,7 +255,6 @@
       position: relative;
     }
 
-    /* Title acts as the secret slider */
     .app-title {
       font-size: 1.25rem;
       font-weight: 700;
@@ -258,7 +264,7 @@
       transform: translateX(-50%);
       white-space: nowrap;
       user-select: none;
-      touch-action: pan-y;
+      touch-action: pan-x;
       cursor: grab;
       padding: 10px;
     }
@@ -316,9 +322,7 @@
       font-weight: 700;
     }
 
-    /* ========================================================== */
     /* HOME DASHBOARD VIEW STYLES */
-    /* ========================================================== */
     #home-dashboard-view {
       display: none; 
       position: absolute;
@@ -978,7 +982,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v56-Beta</span>
+          <span id="kitchen-version-badge">v57-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1235,6 +1239,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=56"></script>
+  <script src="/app.js?v=57"></script>
 </body>
 </html>
