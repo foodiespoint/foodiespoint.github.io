@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=57">
+  <link rel="manifest" href="/manifest.json?v=58">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -63,10 +63,10 @@
       pointer-events: none;
     }
 
-    /* TOP AREA: Logo & Title (Top 12% of screen) */
+    /* TOP AREA: Logo & Title Beside Each Other */
     #splash-header-box {
       position: absolute;
-      top: 12%; 
+      top: 10%; 
       left: 0;
       width: 100%;
       display: flex;
@@ -76,11 +76,18 @@
       padding: 0 20px;
     }
 
-    /* Constrain logo size to match title proportionality */
+    .splash-logo-title-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
     #splash-logo {
-      width: 70px;
+      width: 52px;
       height: auto;
-      margin-bottom: 10px;
     }
 
     .splash-title {
@@ -88,7 +95,7 @@
       font-size: 2.2rem;
       font-weight: 800;
       letter-spacing: -0.5px;
-      margin-bottom: 6px;
+      margin: 0; 
     }
 
     .splash-tagline {
@@ -97,11 +104,11 @@
       font-weight: 500;
     }
 
-    /* LOADING SPINNER BOX (Top Third ~30%) */
+    /* LOADING SPINNER BOX (Exactly 25% from Top) */
     #splash-loader-box {
       display: none; 
       position: absolute;
-      top: 30%;
+      top: 25%;
       left: 0;
       width: 100%;
       flex-direction: column;
@@ -935,8 +942,10 @@
     
     <!-- TITLE & LOGO AT THE TOP -->
     <div id="splash-header-box">
-      <img id="splash-logo" src="/icon.png" alt="Foodies Point Logo">
-      <h1 class="splash-title">Foodies Point</h1>
+      <div class="splash-logo-title-row">
+        <img id="splash-logo" src="/icon.png" alt="Foodies Point Logo">
+        <h1 class="splash-title">Foodies Point</h1>
+      </div>
       <p class="splash-tagline">Delicious Food, Made Fresh.</p>
     </div>
 
@@ -982,7 +991,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v57-Beta</span>
+          <span id="kitchen-version-badge">v58-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1239,6 +1248,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=57"></script>
+  <script src="/app.js?v=58"></script>
 </body>
 </html>
