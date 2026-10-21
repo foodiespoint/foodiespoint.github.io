@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=60">
+  <link rel="manifest" href="/manifest.json?v=61">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -70,10 +70,10 @@
       pointer-events: none;
     }
 
-    /* TOP AREA: Logo & Text Beside Each Other */
+    /* TOP AREA: Logo & Text Beside Each Other (Top 5%) */
     .splash-header-box {
       position: absolute;
-      top: 10%; 
+      top: 5%; 
       left: 0;
       width: 100%;
       display: flex;
@@ -960,7 +960,7 @@
   <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
     
-    <!-- TITLE & LOGO AT THE TOP -->
+    <!-- TITLE & LOGO AT THE TOP (Moved to 5%) -->
     <div id="splash-header-box" class="splash-header-box">
       <div class="splash-brand-row">
         <img id="splash-logo" class="splash-logo" src="/icon.png" alt="Foodies Point Logo">
@@ -971,7 +971,7 @@
       </div>
     </div>
 
-    <!-- LOADER IN THE TOP THIRD (Hidden by default) -->
+    <!-- LOADER IN THE TOP QUARTER (Exactly 25% Top) -->
     <div id="splash-loader-box" class="splash-loader-box">
       <span class="splash-loading-text">Connecting to kitchen...</span>
       <div class="splash-loader"></div>
@@ -986,16 +986,9 @@
 
   <!-- INTERNAL MENU AD TRANSITION SPLASH -->
   <div id="menu-transition-splash">
-    <div class="splash-header-box">
-      <div class="splash-brand-row">
-        <img class="splash-logo" src="/icon.png" alt="Foodies Point Logo">
-        <div class="splash-text-col">
-          <h1 class="splash-title">Foodies Point</h1>
-          <p class="splash-tagline">Delicious Food, Made Fresh.</p>
-        </div>
-      </div>
-    </div>
+    <!-- Clean white screen: NO logo or title in this transition -->
 
+    <!-- LOADER IN THE TOP QUARTER (Exactly 25% Top) -->
     <div id="menu-splash-loader-box" class="splash-loader-box">
       <span class="splash-loading-text">Loading Live Menu...</span>
       <div class="splash-loader"></div>
@@ -1031,7 +1024,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v60-Beta</span>
+          <span id="kitchen-version-badge">v61-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1288,6 +1281,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=60"></script>
+  <script src="/app.js?v=61"></script>
 </body>
 </html>
