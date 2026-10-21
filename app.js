@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v60 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v61 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v60";
+const CURRENT_APP_VERSION = "v61";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -35,37 +35,6 @@ const DOM_SAFE_IDS = [
   'notification-permission-modal', 'pin-modal'
 ];
 
-// Strip dark tint and blur filters from ad backdrops so white screen stays clean
-const stripAdOverlays = () => {
-  Array.from(document.body.children).forEach(child => {
-    if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
-      const st = window.getComputedStyle(child);
-      if (st.position === 'fixed' || st.position === 'absolute') {
-        child.style.setProperty('backdrop-filter', 'none', 'important');
-        child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-        
-        if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
-          child.style.setProperty('background', 'transparent', 'important');
-          child.style.setProperty('background-color', 'transparent', 'important');
-        }
-      }
-    }
-  });
-};
-
-const purgeAllAds = () => {
-  Array.from(document.body.children).forEach(child => {
-    if (!DOM_SAFE_IDS.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-      child.remove();
-    }
-  });
-  Array.from(document.documentElement.children).forEach(child => {
-    if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
-      child.remove();
-    }
-  });
-};
-
 // ==========================================================================
 // 2. SPLASH AUTH & RUTHLESS VIGNETTE AD PURGE ENGINE
 // ==========================================================================
@@ -86,6 +55,35 @@ function executeAppLogin() {
 
   let adDetected = false;
   let appRevealed = false;
+
+  const stripAdOverlays = () => {
+    Array.from(document.body.children).forEach(child => {
+      if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
+        const st = window.getComputedStyle(child);
+        if (st.position === 'fixed' || st.position === 'absolute') {
+          child.style.setProperty('backdrop-filter', 'none', 'important');
+          child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+          if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
+            child.style.setProperty('background', 'transparent', 'important');
+            child.style.setProperty('background-color', 'transparent', 'important');
+          }
+        }
+      }
+    });
+  };
+
+  const purgeAllAds = () => {
+    Array.from(document.body.children).forEach(child => {
+      if (!DOM_SAFE_IDS.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+        child.remove();
+      }
+    });
+    Array.from(document.documentElement.children).forEach(child => {
+      if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
+        child.remove();
+      }
+    });
+  };
 
   const enterApp = () => {
     if (appRevealed) return;
@@ -148,7 +146,7 @@ function executeAppLogin() {
 }
 
 // ==========================================================================
-// 2B. INTERNAL MENU TRANSITION AD ENGINE
+// 2B. INTERNAL MENU TRANSITION AD ENGINE (IFRAME SANDBOX)
 // ==========================================================================
 function triggerMenuAdTransition() {
   const transSplash = document.getElementById('menu-transition-splash');
@@ -161,17 +159,35 @@ function triggerMenuAdTransition() {
   let adDetected = false;
   let transitionDone = false;
 
+  // Create isolated sandboxed iframe to bypass SPA "Once per page" ad limits
+  const adIframe = document.createElement('iframe');
+  adIframe.id = 'menu-ad-iframe';
+  adIframe.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100005; border:none; background:transparent; pointer-events:auto;';
+  document.body.appendChild(adIframe);
+
+  const frameDoc = adIframe.contentWindow.document;
+  frameDoc.open();
+  frameDoc.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { margin: 0; padding: 0; overflow: hidden; background: transparent !important; }
+        </style>
+      </head>
+      <body>
+        <script>(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))<\/script>
+      </body>
+    </html>
+  `);
+  frameDoc.close();
+
   const completeTransition = () => {
     if (transitionDone) return;
     transitionDone = true;
 
-    purgeAllAds();
-    let purgeCount = 0;
-    const purgeInterval = setInterval(() => {
-      purgeAllAds();
-      purgeCount++;
-      if (purgeCount > 20) clearInterval(purgeInterval);
-    }, 100);
+    // Instantly annihilate the ad iframe
+    if (adIframe) adIframe.remove();
 
     if (transSplash) {
       transSplash.classList.add('fade-out');
@@ -183,42 +199,43 @@ function triggerMenuAdTransition() {
   };
 
   const trackerInterval = setInterval(() => {
-    stripAdOverlays();
+    if (transitionDone) return clearInterval(trackerInterval);
 
-    if (adDetected) return;
-    
-    const checkNodes = (parent) => {
-      Array.from(parent.children).forEach(child => {
-        if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
-          const st = window.getComputedStyle(child);
-          if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
+    try {
+      const fDoc = adIframe.contentWindow.document;
+      Array.from(fDoc.body.children).forEach(child => {
+        if (child.tagName === 'DIV') {
+          const st = fDoc.defaultView.getComputedStyle(child);
+          
+          // Strip dark backdrops dynamically
+          if (st.position === 'fixed' || st.position === 'absolute') {
+            child.style.setProperty('backdrop-filter', 'none', 'important');
+            child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+            if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
+              child.style.setProperty('background', 'transparent', 'important');
+              child.style.setProperty('background-color', 'transparent', 'important');
+            }
+          }
+
+          // Detect actual ad appearance
+          if (!adDetected && (st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
             adDetected = true;
+            clearInterval(trackerInterval);
+            // Ad is visible, hold for precisely 3.5 seconds
+            setTimeout(completeTransition, 3500);
           }
         }
       });
-    };
-
-    checkNodes(document.body);
-    checkNodes(document.documentElement);
-
-    if (adDetected) {
-      clearInterval(trackerInterval);
-      setTimeout(completeTransition, 3500);
-    }
+    } catch(e) {}
   }, 100);
 
-  // Re-inject Monetag Vignette snippet
-  const inlineVignette = document.createElement('script');
-  inlineVignette.id = 'monetag-vignette-beta-menu-' + Date.now();
-  inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-  document.body.appendChild(inlineVignette);
-
+  // Faster Failsafe: if Monetag doesn't serve an ad (e.g. network or frequency cap), transition after 5 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
       completeTransition();
     }
-  }, 8000);
+  }, 5000);
 }
 
 // ==========================================================================
