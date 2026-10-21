@@ -1,18 +1,18 @@
 // ==========================================================================
-// FOODIES POINT SERVICE WORKER (BETA ENVIRONMENT - v57)
+// FOODIES POINT SERVICE WORKER (BETA ENVIRONMENT - v58)
 // ==========================================================================
-const CACHE_NAME = 'fp-beta-cache-v57';
+const CACHE_NAME = 'fp-beta-cache-v58';
 
 const ASSETS_TO_CACHE = [
   '/',
-  '/index.html?v=57',
-  '/app.js?v=57',
-  '/manifest.json?v=57',
+  '/index.html?v=58',
+  '/app.js?v=58',
+  '/manifest.json?v=58',
   '/icon.png'
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('[Beta SW v57] Installing new service worker...');
+  console.log('[Beta SW v58] Installing new service worker...');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[Beta SW v57] Activating & wiping old caches...');
+  console.log('[Beta SW v58] Activating & wiping old caches...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -37,7 +37,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  console.log('[Beta SW v57] Native Push Event Received:', event);
+  console.log('[Beta SW v58] Native Push Event Received:', event);
 
   let data = { title: "Foodies Point Beta 🍛", body: "Today's live menu is updated!" };
   if (event.data) {
