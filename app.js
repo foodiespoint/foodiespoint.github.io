@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v61 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v62 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v61";
+const CURRENT_APP_VERSION = "v62";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -150,16 +150,22 @@ function executeAppLogin() {
 // ==========================================================================
 function triggerMenuAdTransition() {
   const transSplash = document.getElementById('menu-transition-splash');
+  const menuLoader = document.getElementById('menu-splash-loader-box');
+
   if (transSplash) {
     transSplash.style.display = 'block';
     transSplash.style.opacity = '1';
     transSplash.classList.remove('fade-out');
   }
+  
+  if (menuLoader) {
+    menuLoader.classList.remove('ad-snapped'); // Ensure loader starts perfectly centered
+  }
 
   let adDetected = false;
   let transitionDone = false;
 
-  // Create isolated sandboxed iframe to bypass SPA "Once per page" ad limits
+  // Create isolated sandboxed iframe with the dedicated LIVE MENU zone ID (12091985)
   const adIframe = document.createElement('iframe');
   adIframe.id = 'menu-ad-iframe';
   adIframe.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100005; border:none; background:transparent; pointer-events:auto;';
@@ -176,7 +182,7 @@ function triggerMenuAdTransition() {
         </style>
       </head>
       <body>
-        <script>(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))<\/script>
+        <script>(function(s){s.dataset.zone='12091985',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))<\/script>
       </body>
     </html>
   `);
@@ -186,7 +192,6 @@ function triggerMenuAdTransition() {
     if (transitionDone) return;
     transitionDone = true;
 
-    // Instantly annihilate the ad iframe
     if (adIframe) adIframe.remove();
 
     if (transSplash) {
@@ -207,7 +212,6 @@ function triggerMenuAdTransition() {
         if (child.tagName === 'DIV') {
           const st = fDoc.defaultView.getComputedStyle(child);
           
-          // Strip dark backdrops dynamically
           if (st.position === 'fixed' || st.position === 'absolute') {
             child.style.setProperty('backdrop-filter', 'none', 'important');
             child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
@@ -217,11 +221,15 @@ function triggerMenuAdTransition() {
             }
           }
 
-          // Detect actual ad appearance
           if (!adDetected && (st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
             adDetected = true;
+            
+            // Ad detected: snap loader from center to top immediately
+            if (menuLoader) {
+              menuLoader.classList.add('ad-snapped');
+            }
+
             clearInterval(trackerInterval);
-            // Ad is visible, hold for precisely 3.5 seconds
             setTimeout(completeTransition, 3500);
           }
         }
@@ -229,7 +237,6 @@ function triggerMenuAdTransition() {
     } catch(e) {}
   }, 100);
 
-  // Faster Failsafe: if Monetag doesn't serve an ad (e.g. network or frequency cap), transition after 5 seconds
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
