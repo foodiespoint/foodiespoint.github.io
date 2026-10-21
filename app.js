@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v59 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v60 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v59";
+const CURRENT_APP_VERSION = "v60";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -28,6 +28,44 @@ try {
   console.error(`[Firebase ${CURRENT_APP_VERSION} Beta] Initialization error:`, error);
 }
 
+const DOM_SAFE_IDS = [
+  'app-root', 'install-gate-overlay', 'app-splash-screen', 'menu-transition-splash',
+  'app-dropdown', 'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
+  'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
+  'notification-permission-modal', 'pin-modal'
+];
+
+// Strip dark tint and blur filters from ad backdrops so white screen stays clean
+const stripAdOverlays = () => {
+  Array.from(document.body.children).forEach(child => {
+    if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
+      const st = window.getComputedStyle(child);
+      if (st.position === 'fixed' || st.position === 'absolute') {
+        child.style.setProperty('backdrop-filter', 'none', 'important');
+        child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        
+        if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
+          child.style.setProperty('background', 'transparent', 'important');
+          child.style.setProperty('background-color', 'transparent', 'important');
+        }
+      }
+    }
+  });
+};
+
+const purgeAllAds = () => {
+  Array.from(document.body.children).forEach(child => {
+    if (!DOM_SAFE_IDS.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+      child.remove();
+    }
+  });
+  Array.from(document.documentElement.children).forEach(child => {
+    if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
+      child.remove();
+    }
+  });
+};
+
 // ==========================================================================
 // 2. SPLASH AUTH & RUTHLESS VIGNETTE AD PURGE ENGINE
 // ==========================================================================
@@ -37,12 +75,10 @@ function executeAppLogin() {
   const headerBox = document.getElementById('splash-header-box');
   const splash = document.getElementById('app-splash-screen');
 
-  // Immediately hide title/logo/button, show loader exactly at 25% top
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerBox) headerBox.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
-  // Ensure splash screen remains crisp, solid white with no transparency
   if (splash) {
     splash.style.setProperty('background', '#FFFFFF', 'important');
     splash.style.setProperty('opacity', '1', 'important');
@@ -51,53 +87,14 @@ function executeAppLogin() {
   let adDetected = false;
   let appRevealed = false;
 
-  const safeIds = [
-    'app-root', 'install-gate-overlay', 'app-splash-screen',
-    'app-dropdown', 'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
-    'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
-    'notification-permission-modal', 'pin-modal'
-  ];
-
-  // Strip dark tint and blur filters from ad backdrops so white screen stays clean
-  const stripAdOverlays = () => {
-    Array.from(document.body.children).forEach(child => {
-      if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
-        const st = window.getComputedStyle(child);
-        if (st.position === 'fixed' || st.position === 'absolute') {
-          child.style.setProperty('backdrop-filter', 'none', 'important');
-          child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-          
-          if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
-            child.style.setProperty('background', 'transparent', 'important');
-            child.style.setProperty('background-color', 'transparent', 'important');
-          }
-        }
-      }
-    });
-  };
-
   const enterApp = () => {
     if (appRevealed) return;
     appRevealed = true;
 
-    const purgeAds = () => {
-      Array.from(document.body.children).forEach(child => {
-        if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-          child.remove();
-        }
-      });
-      Array.from(document.documentElement.children).forEach(child => {
-        if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
-          child.remove();
-        }
-      });
-    };
-
-    purgeAds();
-    
+    purgeAllAds();
     let purgeCount = 0;
     const purgeInterval = setInterval(() => {
-      purgeAds();
+      purgeAllAds();
       purgeCount++;
       if (purgeCount > 20) clearInterval(purgeInterval);
     }, 100);
@@ -119,7 +116,7 @@ function executeAppLogin() {
     
     const checkNodes = (parent) => {
       Array.from(parent.children).forEach(child => {
-        if (!safeIds.includes(child.id) && child.tagName === 'DIV') {
+        if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
           const st = window.getComputedStyle(child);
           if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
             adDetected = true;
@@ -138,7 +135,7 @@ function executeAppLogin() {
   }, 100);
 
   const inlineVignette = document.createElement('script');
-  inlineVignette.id = 'monetag-vignette-beta';
+  inlineVignette.id = 'monetag-vignette-beta-login';
   inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
   document.body.appendChild(inlineVignette);
 
@@ -151,7 +148,81 @@ function executeAppLogin() {
 }
 
 // ==========================================================================
-// 2B. CUSTOMER DASHBOARD ROUTING ENGINE
+// 2B. INTERNAL MENU TRANSITION AD ENGINE
+// ==========================================================================
+function triggerMenuAdTransition() {
+  const transSplash = document.getElementById('menu-transition-splash');
+  if (transSplash) {
+    transSplash.style.display = 'block';
+    transSplash.style.opacity = '1';
+    transSplash.classList.remove('fade-out');
+  }
+
+  let adDetected = false;
+  let transitionDone = false;
+
+  const completeTransition = () => {
+    if (transitionDone) return;
+    transitionDone = true;
+
+    purgeAllAds();
+    let purgeCount = 0;
+    const purgeInterval = setInterval(() => {
+      purgeAllAds();
+      purgeCount++;
+      if (purgeCount > 20) clearInterval(purgeInterval);
+    }, 100);
+
+    if (transSplash) {
+      transSplash.classList.add('fade-out');
+      setTimeout(() => {
+        transSplash.style.display = 'none';
+        openLiveMenu();
+      }, 400);
+    }
+  };
+
+  const trackerInterval = setInterval(() => {
+    stripAdOverlays();
+
+    if (adDetected) return;
+    
+    const checkNodes = (parent) => {
+      Array.from(parent.children).forEach(child => {
+        if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
+          const st = window.getComputedStyle(child);
+          if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
+            adDetected = true;
+          }
+        }
+      });
+    };
+
+    checkNodes(document.body);
+    checkNodes(document.documentElement);
+
+    if (adDetected) {
+      clearInterval(trackerInterval);
+      setTimeout(completeTransition, 3500);
+    }
+  }, 100);
+
+  // Re-inject Monetag Vignette snippet
+  const inlineVignette = document.createElement('script');
+  inlineVignette.id = 'monetag-vignette-beta-menu-' + Date.now();
+  inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+  document.body.appendChild(inlineVignette);
+
+  setTimeout(() => {
+    if (!adDetected) {
+      clearInterval(trackerInterval);
+      completeTransition();
+    }
+  }, 8000);
+}
+
+// ==========================================================================
+// 2C. CUSTOMER DASHBOARD ROUTING ENGINE
 // ==========================================================================
 function showDashboard(pushToHistory = true) {
   currentAppView = 'dashboard';
@@ -268,9 +339,9 @@ function urlBase64ToUint8Array(base64String) {
 
 function checkAppOnboarding() {
   const splash = document.getElementById('app-splash-screen');
-  if (splash && splash.style.display !== 'none' && !splash.classList.contains('fade-out')) {
-    return; 
-  }
+  const transSplash = document.getElementById('menu-transition-splash');
+  if (splash && splash.style.display !== 'none' && !splash.classList.contains('fade-out')) return; 
+  if (transSplash && transSplash.style.display !== 'none' && !transSplash.classList.contains('fade-out')) return; 
 
   if (isKitchenMode) {
      document.getElementById('profile-modal').style.display = 'none';
@@ -749,7 +820,7 @@ let latestFirebaseMenuSnapshot = null;
 function loadDynamicMenuCatalog() {
   if (!db) return;
   db.ref('beta_menu_catalog').on('value', (snap) => {
-    const catalog = val = snap.val();
+    const catalog = snap.val();
     activeMenuItems = catalog ? catalog : [...DEFAULT_MENU_ITEMS];
     if (isKitchenMode) renderKitchenMenu();
     if (!isKitchenMode && latestFirebaseMenuSnapshot) renderCustomerMenuFromSnapshot(latestFirebaseMenuSnapshot);
