@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v55 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v56 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v55";
+const CURRENT_APP_VERSION = "v56";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -34,11 +34,12 @@ try {
 function executeAppLogin() {
   const loginBtn = document.getElementById('splash-login-btn');
   const loaderBox = document.getElementById('splash-loader-box');
-  const headerText = document.getElementById('splash-header-text');
+  const headerBox = document.getElementById('splash-header-box');
   const splash = document.getElementById('app-splash-screen');
 
+  // Immediately hide title/logo/button, show loader in top third
   if (loginBtn) loginBtn.style.display = 'none';
-  if (headerText) headerText.style.display = 'none';
+  if (headerBox) headerBox.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
 
   // Ensure splash screen remains crisp, solid white with no transparency
@@ -66,7 +67,6 @@ function executeAppLogin() {
           child.style.setProperty('backdrop-filter', 'none', 'important');
           child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
           
-          // Clear any dark veil applied by Monetag over the screen
           if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
             child.style.setProperty('background', 'transparent', 'important');
             child.style.setProperty('background-color', 'transparent', 'important');
@@ -80,7 +80,6 @@ function executeAppLogin() {
     if (appRevealed) return;
     appRevealed = true;
 
-    // Physically purge ad nodes from the DOM
     const purgeAds = () => {
       Array.from(document.body.children).forEach(child => {
         if (!safeIds.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
@@ -103,7 +102,6 @@ function executeAppLogin() {
       if (purgeCount > 20) clearInterval(purgeInterval);
     }, 100);
 
-    // Fade out splash screen and reveal app dashboard
     if (splash) {
       splash.classList.add('fade-out');
       setTimeout(() => {
@@ -114,7 +112,6 @@ function executeAppLogin() {
     }
   };
 
-  // High-speed tracker: Watch for ad appearance, keep background clear of dark overlays
   const trackerInterval = setInterval(() => {
     stripAdOverlays();
 
@@ -136,18 +133,15 @@ function executeAppLogin() {
 
     if (adDetected) {
       clearInterval(trackerInterval);
-      // Hold ad for exactly 3.5 seconds
       setTimeout(enterApp, 3500);
     }
   }, 100);
 
-  // Inject Monetag Vignette snippet
   const inlineVignette = document.createElement('script');
   inlineVignette.id = 'monetag-vignette-beta';
   inlineVignette.innerHTML = `(function(s){s.dataset.zone='11928230',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
   document.body.appendChild(inlineVignette);
 
-  // Network / AdBlock failsafe (8s)
   setTimeout(() => {
     if (!adDetected) {
       clearInterval(trackerInterval);
@@ -190,7 +184,7 @@ function openFestiveSpecial() {
 }
 
 // ==========================================================================
-// 3. SECRET SLIDE-TO-UNLOCK TITLE ENGINE (RIGHT-SLIDE WITH VISUAL CAP)
+// 3. SECRET SLIDE-TO-UNLOCK TITLE ENGINE
 // ==========================================================================
 function initSecretTitleSlider() {
   const titleElement = document.getElementById('main-app-title');
