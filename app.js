@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v58 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v59 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v58";
+const CURRENT_APP_VERSION = "v59";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -749,7 +749,7 @@ let latestFirebaseMenuSnapshot = null;
 function loadDynamicMenuCatalog() {
   if (!db) return;
   db.ref('beta_menu_catalog').on('value', (snap) => {
-    const catalog = snap.val();
+    const catalog = val = snap.val();
     activeMenuItems = catalog ? catalog : [...DEFAULT_MENU_ITEMS];
     if (isKitchenMode) renderKitchenMenu();
     if (!isKitchenMode && latestFirebaseMenuSnapshot) renderCustomerMenuFromSnapshot(latestFirebaseMenuSnapshot);
