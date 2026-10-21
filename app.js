@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v57 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v58 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v57";
+const CURRENT_APP_VERSION = "v58";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -37,7 +37,7 @@ function executeAppLogin() {
   const headerBox = document.getElementById('splash-header-box');
   const splash = document.getElementById('app-splash-screen');
 
-  // Immediately hide title/logo/button, show loader in top third
+  // Immediately hide title/logo/button, show loader exactly at 25% top
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerBox) headerBox.style.display = 'none';
   if (loaderBox) loaderBox.style.display = 'flex';
