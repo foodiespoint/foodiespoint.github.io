@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=55">
+  <link rel="manifest" href="/manifest.json?v=56">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -63,10 +63,10 @@
       pointer-events: none;
     }
 
-    /* TOP AREA: Swaps Title for Loading Stack */
-    .splash-top-area {
+    /* TOP AREA: Logo & Title (Top 12% of screen) */
+    #splash-header-box {
       position: absolute;
-      top: 28%; 
+      top: 12%; 
       left: 0;
       width: 100%;
       display: flex;
@@ -90,6 +90,41 @@
       font-weight: 500;
     }
 
+    /* LOADING SPINNER BOX (Top Third ~30%) */
+    #splash-loader-box {
+      display: none; 
+      position: absolute;
+      top: 30%;
+      left: 0;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .splash-loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #F0F0F0;
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: splashSpin 0.85s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+    }
+
+    .splash-loading-text {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes splashSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ABSOLUTE CENTERED LOGIN BUTTON */
     .splash-btn {
       position: absolute;
       top: 50%;
@@ -113,36 +148,6 @@
 
     .splash-btn:active {
       transform: translate(-50%, -50%) scale(0.97); 
-    }
-
-    .splash-loading-box {
-      display: none; 
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-top: 10px;
-    }
-
-    .splash-loader {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #F0F0F0;
-      border-top-color: var(--primary-color);
-      border-radius: 50%;
-      animation: splashSpin 0.85s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
-    }
-
-    .splash-loading-text {
-      color: var(--text-dark);
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-
-    @keyframes splashSpin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
 
     /* COMPLETE WINDOW RIGID WRAPPER */
@@ -243,6 +248,7 @@
       position: relative;
     }
 
+    /* Title acts as the secret slider */
     .app-title {
       font-size: 1.25rem;
       font-weight: 700;
@@ -252,7 +258,7 @@
       transform: translateX(-50%);
       white-space: nowrap;
       user-select: none;
-      touch-action: pan-x;
+      touch-action: pan-y;
       cursor: grab;
       padding: 10px;
     }
@@ -310,7 +316,9 @@
       font-weight: 700;
     }
 
+    /* ========================================================== */
     /* HOME DASHBOARD VIEW STYLES */
+    /* ========================================================== */
     #home-dashboard-view {
       display: none; 
       position: absolute;
@@ -921,18 +929,20 @@
   <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
     
-    <div class="splash-top-area">
-      <div id="splash-header-text">
-        <h1 class="splash-title">Foodies Point</h1>
-        <p class="splash-tagline">Delicious Food, Made Fresh.</p>
-      </div>
-
-      <div id="splash-loader-box" class="splash-loading-box">
-        <span class="splash-loading-text">Connecting to kitchen...</span>
-        <div class="splash-loader"></div>
-      </div>
+    <!-- TITLE & LOGO AT THE TOP -->
+    <div id="splash-header-box">
+      <img id="splash-logo" src="/icon.png" alt="Foodies Point Logo">
+      <h1 class="splash-title">Foodies Point</h1>
+      <p class="splash-tagline">Delicious Food, Made Fresh.</p>
     </div>
 
+    <!-- LOADER IN THE TOP THIRD (Hidden by default) -->
+    <div id="splash-loader-box">
+      <span class="splash-loading-text">Connecting to kitchen...</span>
+      <div class="splash-loader"></div>
+    </div>
+
+    <!-- LOGIN BUTTON CENTERED -->
     <a href="javascript:void(0)" id="splash-login-btn" class="splash-btn" onclick="executeAppLogin()">
       Login & Enter
     </a>
@@ -968,10 +978,11 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v55-Beta</span>
+          <span id="kitchen-version-badge">v56-Beta</span>
         </div>
 
         <div class="header-right-group">
+          <!-- HAMBURGER ICON ONLY SHOWN IN KITCHEN MODE NOW -->
           <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu" style="display: none;">☰</button>
         </div>
       </header>
@@ -1224,6 +1235,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=55"></script>
+  <script src="/app.js?v=56"></script>
 </body>
 </html>
