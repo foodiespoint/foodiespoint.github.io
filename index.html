@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=68">
+  <link rel="manifest" href="/manifest.json?v=69">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -362,6 +362,7 @@
       margin: 0 auto;
       padding: 24px 20px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .dash-welcome {
@@ -379,6 +380,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      padding-bottom: 16px;
     }
 
     .dash-card {
@@ -1030,7 +1032,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v68-Beta</span>
+          <span id="kitchen-version-badge">v69-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1045,7 +1047,7 @@
         </div>
 
         <div class="dash-grid">
-          <!-- Button 1: Live Menu (OPENS DIRECTLY) -->
+          <!-- Button 1: Live Menu -->
           <div class="dash-card" onclick="openLiveMenu()">
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
@@ -1065,12 +1067,32 @@
             <div class="dash-arrow">➔</div>
           </div>
           
-          <!-- Future Button Placeholder -->
+          <!-- Button 3: Bulk / Party Orders -->
           <div class="dash-card" onclick="alert('Party Orders module coming soon!')">
             <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
             <div class="dash-text">
               <h3>Bulk / Party Orders</h3>
               <p>For your special events</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Button 4: Preserved Food and Condiments -->
+          <div class="dash-card" onclick="openPreservedFoods()">
+            <div class="dash-icon" style="background: #FFF8E1; color: #F57F17;">🫙</div>
+            <div class="dash-text">
+              <h3>Preserved Food and Condiments</h3>
+              <p>Homemade pickles, chutneys & spreads</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Button 5: Bakery Products -->
+          <div class="dash-card" onclick="openBakeryProducts()">
+            <div class="dash-icon" style="background: #FCE4EC; color: #C2185B;">🥐</div>
+            <div class="dash-text">
+              <h3>Bakery Products</h3>
+              <p>Fresh cakes, cupcakes & baked treats</p>
             </div>
             <div class="dash-arrow">➔</div>
           </div>
@@ -1286,6 +1308,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=68"></script>
+  <script src="/app.js?v=69"></script>
 </body>
 </html>
