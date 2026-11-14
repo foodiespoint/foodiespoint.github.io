@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v69 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v70 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v69";
+const CURRENT_APP_VERSION = "v70";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -34,6 +34,109 @@ const DOM_SAFE_IDS = [
   'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
   'notification-permission-modal', 'pin-modal'
 ];
+
+// ==========================================================================
+// 1B. MULTI-MENU CONFIGURATION & NEW-ITEM BADGE TRACKER
+// ==========================================================================
+const MENU_CONFIGS = {
+  daily: {
+    key: 'daily',
+    label: 'Daily Live Menu',
+    headerTitle: 'Daily Menu',
+    sectionTitle: "Today's Live Menu",
+    dbPath: 'beta_dailyMenu',
+    cardId: 'dash-card-daily',
+    badgeId: 'dash-badge-daily'
+  },
+  festive: {
+    key: 'festive',
+    label: 'Festive Special',
+    headerTitle: 'Festive Special',
+    sectionTitle: 'Festive Special Menu',
+    dbPath: 'beta_menus/festive',
+    cardId: 'dash-card-festive',
+    badgeId: 'dash-badge-festive'
+  },
+  party: {
+    key: 'party',
+    label: 'Bulk / Party Orders',
+    headerTitle: 'Bulk / Party Orders',
+    sectionTitle: 'Bulk & Party Menu',
+    dbPath: 'beta_menus/party',
+    cardId: 'dash-card-party',
+    badgeId: 'dash-badge-party'
+  },
+  preserved: {
+    key: 'preserved',
+    label: 'Preserved Food and Condiments',
+    headerTitle: 'Preserved & Condiments',
+    sectionTitle: 'Preserved Food & Condiments',
+    dbPath: 'beta_menus/preserved',
+    cardId: 'dash-card-preserved',
+    badgeId: 'dash-badge-preserved'
+  },
+  bakery: {
+    key: 'bakery',
+    label: 'Bakery Products',
+    headerTitle: 'Bakery Products',
+    sectionTitle: 'Fresh Bakery Menu',
+    dbPath: 'beta_menus/bakery',
+    cardId: 'dash-card-bakery',
+    badgeId: 'dash-badge-bakery'
+  }
+};
+
+let activeCustomerMenuKey = 'daily';
+let activeKitchenMenuKey = 'daily';
+const menuSnapshotsByKey = {
+  daily: null,
+  festive: null,
+  party: null,
+  preserved: null,
+  bakery: null
+};
+
+function getSeenMenuItemIds(menuKey) {
+  try {
+    return JSON.parse(localStorage.getItem(`fp_beta_seen_items_${menuKey}`) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function markMenuItemsAsSeen(menuKey) {
+  const snapshot = menuSnapshotsByKey[menuKey];
+  const currentIds = snapshot ? Object.keys(snapshot) : [];
+  localStorage.setItem(`fp_beta_seen_items_${menuKey}`, JSON.stringify(currentIds));
+  updateDashboardMenuHighlight(menuKey);
+}
+
+function updateDashboardMenuHighlight(menuKey) {
+  const cfg = MENU_CONFIGS[menuKey];
+  if (!cfg) return;
+
+  const card = document.getElementById(cfg.cardId);
+  const badge = document.getElementById(cfg.badgeId);
+  if (!card || !badge) return;
+
+  const snapshot = menuSnapshotsByKey[menuKey];
+  const currentIds = snapshot ? Object.keys(snapshot) : [];
+
+  if (currentIds.length === 0) {
+    card.classList.remove('has-new-items');
+    return;
+  }
+
+  const seenIds = getSeenMenuItemIds(menuKey);
+  const newItemIds = currentIds.filter(id => !seenIds.includes(id));
+
+  if (newItemIds.length > 0) {
+    badge.textContent = newItemIds.length > 1 ? `NEW (+${newItemIds.length})` : 'NEW';
+    card.classList.add('has-new-items');
+  } else {
+    card.classList.remove('has-new-items');
+  }
+}
 
 // ==========================================================================
 // 2. SPLASH AUTH & RUTHLESS VIGNETTE AD PURGE ENGINE
@@ -163,32 +266,47 @@ function showDashboard(pushToHistory = true) {
   document.getElementById('header-back-btn').style.display = 'none';
   document.getElementById('main-app-title-text').textContent = 'Foodies Point';
 
+  Object.keys(MENU_CONFIGS).forEach(k => updateDashboardMenuHighlight(k));
+
   if (pushToHistory) history.pushState({ page: 'dashboard' }, '', '#dashboard');
 }
 
-function openLiveMenu(pushToHistory = true) {
+function openMenuCategory(menuKey = 'daily', pushToHistory = true) {
+  const cfg = MENU_CONFIGS[menuKey] || MENU_CONFIGS.daily;
+  activeCustomerMenuKey = cfg.key;
   currentAppView = 'live-menu';
+
+  markMenuItemsAsSeen(cfg.key);
 
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'flex';
   
   document.getElementById('header-back-btn').style.display = 'inline-flex';
-  document.getElementById('main-app-title-text').textContent = 'Daily Menu';
+  document.getElementById('main-app-title-text').textContent = cfg.headerTitle;
 
-  if (pushToHistory) history.pushState({ page: 'live-menu' }, '', '#live-menu');
+  const sectionTitleEl = document.getElementById('customer-menu-section-title');
+  if (sectionTitleEl) sectionTitleEl.textContent = cfg.sectionTitle;
+
+  renderCustomerMenuFromSnapshot(menuSnapshotsByKey[cfg.key]);
+
+  if (pushToHistory) history.pushState({ page: 'live-menu', menuKey: cfg.key }, '', `#menu-${cfg.key}`);
+}
+
+function openLiveMenu(pushToHistory = true) {
+  openMenuCategory('daily', pushToHistory);
 }
 
 function openFestiveSpecial() {
-  alert("🎉 Festive Special Menu is coming soon! Check back during the holidays.");
+  openMenuCategory('festive', true);
 }
 
 function openPreservedFoods() {
-  alert("🫙 Preserved Food and Condiments menu is coming soon!");
+  openMenuCategory('preserved', true);
 }
 
 function openBakeryProducts() {
-  alert("🥐 Bakery Products menu is coming soon!");
+  openMenuCategory('bakery', true);
 }
 
 // ==========================================================================
@@ -245,7 +363,9 @@ function checkDaily6PMReset() {
 
   if (hour >= 18 && hour < 21 && lastResetDate !== todayStr) {
     localStorage.setItem('fp_beta_last_reset_date', todayStr);
-    kitchenCheckedState = {};
+    if (activeKitchenMenuKey === 'daily') {
+      kitchenCheckedState = {};
+    }
 
     if (db) {
       db.ref('beta_dailyMenu').remove()
@@ -750,7 +870,6 @@ const DEFAULT_MENU_ITEMS = [
 let activeMenuItems = [...DEFAULT_MENU_ITEMS];
 const cart = {};
 let kitchenCheckedState = {};
-let latestFirebaseMenuSnapshot = null;
 
 function loadDynamicMenuCatalog() {
   if (!db) return;
@@ -758,7 +877,9 @@ function loadDynamicMenuCatalog() {
     const catalog = snap.val();
     activeMenuItems = catalog ? catalog : [...DEFAULT_MENU_ITEMS];
     if (isKitchenMode) renderKitchenMenu();
-    if (!isKitchenMode && latestFirebaseMenuSnapshot) renderCustomerMenuFromSnapshot(latestFirebaseMenuSnapshot);
+    if (!isKitchenMode && currentAppView === 'live-menu') {
+      renderCustomerMenuFromSnapshot(menuSnapshotsByKey[activeCustomerMenuKey]);
+    }
   });
 }
 
@@ -900,6 +1021,15 @@ function clearKitchenSearch() {
   renderKitchenMenu();
 }
 
+function switchKitchenTargetMenu() {
+  const select = document.getElementById('kitchen-target-menu-select');
+  if (!select) return;
+  activeKitchenMenuKey = select.value || 'daily';
+  resetKitchenSearchState();
+  kitchenCheckedState = { ...(menuSnapshotsByKey[activeKitchenMenuKey] || {}) };
+  renderKitchenMenu();
+}
+
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
   if (!container) return;
@@ -984,40 +1114,42 @@ function toggleKitchenItem(dishId, isChecked) {
 }
 
 function toggleOutOfStock(dishId) {
+  const cfg = MENU_CONFIGS[activeKitchenMenuKey] || MENU_CONFIGS.daily;
   const current = kitchenCheckedState[dishId];
   const newState = (current === 'OOS') ? true : 'OOS';
   kitchenCheckedState[dishId] = newState;
 
   if (db) {
-    db.ref(`beta_dailyMenu/${dishId}`).set(newState);
+    db.ref(`${cfg.dbPath}/${dishId}`).set(newState);
   }
   renderKitchenMenu();
 }
 
 // ==========================================================================
-// 11. PUBLISH OR CLEAR DAILY LIVE MENU
+// 11. PUBLISH OR CLEAR MENU
 // ==========================================================================
 function publishDailyMenu() {
   if (!db) return alert("Database connection is not ready. Please refresh.");
 
+  const cfg = MENU_CONFIGS[activeKitchenMenuKey] || MENU_CONFIGS.daily;
   const selectedCount = Object.keys(kitchenCheckedState).length;
 
   if (selectedCount === 0) {
-    if (confirm("No items selected. Do you want to clear all items from the customer's live menu page?")) {
+    if (confirm(`No items selected. Do you want to clear all items from ${cfg.label}?`)) {
       clearDailyMenu();
     }
     return;
   }
 
-  const confirmMsg = `Are you sure you want to publish ${selectedCount} selected items to the BETA live customer menu?`;
+  const confirmMsg = `Are you sure you want to publish ${selectedCount} selected items to ${cfg.label}?`;
   if (!confirm(confirmMsg)) return;
 
-  db.ref('beta_dailyMenu').set(kitchenCheckedState)
+  db.ref(cfg.dbPath).set(kitchenCheckedState)
     .then(() => {
-      alert(`Beta Menu published successfully (${selectedCount} items)!`);
+      alert(`${cfg.label} published successfully (${selectedCount} items)!`);
       sendRenderPushBroadcast(
-        "Beta Menu Up! 🍛",
-        `We just published ${selectedCount} items.`
+        `${cfg.label} Up! 🍛`,
+        `We just published ${selectedCount} items to ${cfg.label}.`
       );
     })
     .catch((error) => console.error("Error publishing menu:", error));
@@ -1025,19 +1157,20 @@ function publishDailyMenu() {
 
 function clearDailyMenu() {
   if (!db) return;
-  if (confirm("Remove all items from the beta customer menu?")) {
-    db.ref('beta_dailyMenu').remove()
+  const cfg = MENU_CONFIGS[activeKitchenMenuKey] || MENU_CONFIGS.daily;
+  if (confirm(`Remove all items from ${cfg.label}?`)) {
+    db.ref(cfg.dbPath).remove()
       .then(() => {
         kitchenCheckedState = {};
         renderKitchenMenu();
         alert("All items removed!");
       })
-      .catch((error) => console.error("Error clearing daily menu:", error));
+      .catch((error) => console.error("Error clearing menu:", error));
   }
 }
 
 // ==========================================================================
-// 12. CUSTOMER LIVE MENU LISTENER
+// 12. CUSTOMER LIVE MENU LISTENER (ALL 5 MENUS)
 // ==========================================================================
 function renderCustomerMenuFromSnapshot(activeIds) {
   const container = document.getElementById('customer-menu-container');
@@ -1046,7 +1179,7 @@ function renderCustomerMenuFromSnapshot(activeIds) {
 
   container.innerHTML = '';
 
-  if (isDuringBreakWindow()) {
+  if (activeCustomerMenuKey === 'daily' && isDuringBreakWindow()) {
     container.innerHTML = `
       <div style="text-align:center; padding: 40px 20px; color:#555;">
         <div style="font-size: 2.5rem; margin-bottom: 12px;">🌙</div>
@@ -1064,7 +1197,8 @@ function renderCustomerMenuFromSnapshot(activeIds) {
   if (placeOrderBtn) placeOrderBtn.disabled = false;
 
   if (!activeIds || Object.keys(activeIds).length === 0) {
-    container.innerHTML = `<p style="text-align:center; padding: 40px 20px; color:#666;">The kitchen is preparing today's live menu. Please check back shortly!</p>`;
+    const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
+    container.innerHTML = `<p style="text-align:center; padding: 40px 20px; color:#666;">The kitchen is preparing ${cfg.label}. Please check back shortly!</p>`;
     return;
   }
 
@@ -1101,9 +1235,23 @@ function renderCustomerMenuFromSnapshot(activeIds) {
 
 function listenForCustomerLiveMenu() {
   if (!db) return;
-  db.ref('beta_dailyMenu').on('value', (snapshot) => {
-    latestFirebaseMenuSnapshot = snapshot.val();
-    renderCustomerMenuFromSnapshot(latestFirebaseMenuSnapshot);
+  Object.keys(MENU_CONFIGS).forEach((menuKey) => {
+    const cfg = MENU_CONFIGS[menuKey];
+    db.ref(cfg.dbPath).on('value', (snapshot) => {
+      menuSnapshotsByKey[menuKey] = snapshot.val();
+
+      if (isKitchenMode && activeKitchenMenuKey === menuKey) {
+        kitchenCheckedState = menuSnapshotsByKey[menuKey] || {};
+        renderKitchenMenu();
+      }
+
+      if (!isKitchenMode && currentAppView === 'live-menu' && activeCustomerMenuKey === menuKey) {
+        markMenuItemsAsSeen(menuKey);
+        renderCustomerMenuFromSnapshot(menuSnapshotsByKey[menuKey]);
+      } else {
+        updateDashboardMenuHighlight(menuKey);
+      }
+    });
   });
 }
 
@@ -1126,7 +1274,7 @@ function updateQuantity(dishId, change) {
 let pendingCustomerOrder = null;
 
 function openOrderOptionsModal() {
-  if (isDuringBreakWindow()) {
+  if (activeCustomerMenuKey === 'daily' && isDuringBreakWindow()) {
     alert("Orders are closed for today. Tomorrow's menu will be available starting at 9:00 PM tonight!");
     return;
   }
@@ -1383,6 +1531,10 @@ function enterKitchenMode() {
 
   resetKitchenSearchState();
 
+  const targetSelect = document.getElementById('kitchen-target-menu-select');
+  activeKitchenMenuKey = targetSelect ? targetSelect.value : 'daily';
+  kitchenCheckedState = { ...(menuSnapshotsByKey[activeKitchenMenuKey] || {}) };
+
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
 
@@ -1396,16 +1548,7 @@ function enterKitchenMode() {
   
   checkAppOnboarding();
   syncKitchenPushSubscription();
-
-  if (db) {
-    db.ref('beta_dailyMenu').on('value', (snapshot) => {
-      kitchenCheckedState = snapshot.val() || {};
-      renderKitchenMenu();
-    });
-  } else {
-    renderKitchenMenu();
-  }
-
+  renderKitchenMenu();
   listenForKitchenOrders();
 }
 
@@ -1445,7 +1588,6 @@ function exitKitchenMode(triggerHistoryBack = true) {
 
   if (db) {
     db.ref('beta_orders').off();
-    db.ref('beta_dailyMenu').off();
   }
 }
 
@@ -1824,8 +1966,8 @@ function initFoodiesPoint() {
 
   setInterval(() => {
     checkDaily6PMReset();
-    if (!isKitchenMode && latestFirebaseMenuSnapshot) {
-      renderCustomerMenuFromSnapshot(latestFirebaseMenuSnapshot);
+    if (!isKitchenMode && currentAppView === 'live-menu') {
+      renderCustomerMenuFromSnapshot(menuSnapshotsByKey[activeCustomerMenuKey]);
     }
   }, 30000);
 }
