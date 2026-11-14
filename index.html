@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=69">
+  <link rel="manifest" href="/manifest.json?v=70">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -380,24 +380,52 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding-bottom: 16px;
+      padding-bottom: 20px;
     }
 
     .dash-card {
+      position: relative;
       background: var(--white);
       border-radius: 18px;
       padding: 20px 18px;
       display: flex;
       align-items: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--border-color);
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.25s ease, background-color 0.25s ease;
       text-align: left;
     }
 
     .dash-card:active {
       transform: scale(0.97);
+    }
+
+    /* GREEN HIGHLIGHT & BADGE WHEN NEW ITEMS ARE POSTED */
+    .dash-card.has-new-items {
+      border-color: #2E7D32;
+      background: #F4FBF5;
+      box-shadow: 0 6px 16px rgba(46, 125, 50, 0.16);
+    }
+
+    .menu-new-badge {
+      display: none;
+      position: absolute;
+      top: -10px;
+      right: 16px;
+      background: #2E7D32;
+      color: var(--white);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(46, 125, 50, 0.35);
+    }
+
+    .dash-card.has-new-items .menu-new-badge {
+      display: inline-block;
     }
 
     .dash-icon {
@@ -434,6 +462,10 @@
       font-size: 1.4rem;
       font-weight: bold;
       padding-left: 10px;
+    }
+
+    .dash-card.has-new-items .dash-arrow {
+      color: #2E7D32;
     }
 
     /* CUSTOMER MENU VIEW */
@@ -648,6 +680,26 @@
     .status-PENDING { background: #FFF3E0; color: #EF6C00; }
     .status-ACCEPTED { background: #E8F5E9; color: #2E7D32; }
     .status-REJECTED { background: #FFEBEE; color: #C62828; }
+
+    .kitchen-target-menu-bar {
+      margin-bottom: 12px;
+    }
+
+    .kitchen-target-menu-bar select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      background: var(--white);
+      outline: none;
+    }
+
+    .kitchen-target-menu-bar select:focus {
+      border-color: var(--primary-color);
+    }
 
     .kitchen-menu-actions {
       display: flex;
@@ -1032,7 +1084,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v69-Beta</span>
+          <span id="kitchen-version-badge">v70-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1047,8 +1099,9 @@
         </div>
 
         <div class="dash-grid">
-          <!-- Button 1: Live Menu -->
-          <div class="dash-card" onclick="openLiveMenu()">
+          <!-- Button 1: Daily Live Menu -->
+          <div class="dash-card" id="dash-card-daily" onclick="openMenuCategory('daily')">
+            <span class="menu-new-badge" id="dash-badge-daily">NEW</span>
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
               <h3>Daily Live Menu</h3>
@@ -1058,7 +1111,8 @@
           </div>
 
           <!-- Button 2: Festive Special -->
-          <div class="dash-card" onclick="openFestiveSpecial()">
+          <div class="dash-card" id="dash-card-festive" onclick="openMenuCategory('festive')">
+            <span class="menu-new-badge" id="dash-badge-festive">NEW</span>
             <div class="dash-icon" style="background: #E8F5E9; color: #2E7D32;">🎉</div>
             <div class="dash-text">
               <h3>Festive Special</h3>
@@ -1068,7 +1122,8 @@
           </div>
           
           <!-- Button 3: Bulk / Party Orders -->
-          <div class="dash-card" onclick="alert('Party Orders module coming soon!')">
+          <div class="dash-card" id="dash-card-party" onclick="openMenuCategory('party')">
+            <span class="menu-new-badge" id="dash-badge-party">NEW</span>
             <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
             <div class="dash-text">
               <h3>Bulk / Party Orders</h3>
@@ -1078,7 +1133,8 @@
           </div>
 
           <!-- Button 4: Preserved Food and Condiments -->
-          <div class="dash-card" onclick="openPreservedFoods()">
+          <div class="dash-card" id="dash-card-preserved" onclick="openMenuCategory('preserved')">
+            <span class="menu-new-badge" id="dash-badge-preserved">NEW</span>
             <div class="dash-icon" style="background: #FFF8E1; color: #F57F17;">🫙</div>
             <div class="dash-text">
               <h3>Preserved Food and Condiments</h3>
@@ -1088,7 +1144,8 @@
           </div>
 
           <!-- Button 5: Bakery Products -->
-          <div class="dash-card" onclick="openBakeryProducts()">
+          <div class="dash-card" id="dash-card-bakery" onclick="openMenuCategory('bakery')">
+            <span class="menu-new-badge" id="dash-badge-bakery">NEW</span>
             <div class="dash-icon" style="background: #FCE4EC; color: #C2185B;">🥐</div>
             <div class="dash-text">
               <h3>Bakery Products</h3>
@@ -1102,7 +1159,7 @@
       <!-- CUSTOMER ORDER VIEW -->
       <main id="customer-view">
         <div class="customer-half customer-upper">
-          <h2 class="section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
+          <h2 class="section-title" id="customer-menu-section-title" style="flex-shrink: 0;">Today's Live Menu</h2>
           <div class="menu-scroll-area">
             <div class="menu-list" id="customer-menu-container">
               <p style="text-align:center; padding: 30px; color:#666;">Loading live menu...</p>
@@ -1127,6 +1184,15 @@
       <!-- FULL PAGE MENU CONSOLE -->
       <section id="kitchen-view">
         <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
+        <div class="kitchen-target-menu-bar">
+          <select id="kitchen-target-menu-select" onchange="switchKitchenTargetMenu()">
+            <option value="daily">🍲 Target: Daily Live Menu</option>
+            <option value="festive">🎉 Target: Festive Special</option>
+            <option value="party">🎊 Target: Bulk / Party Orders</option>
+            <option value="preserved">🫙 Target: Preserved Food and Condiments</option>
+            <option value="bakery">🥐 Target: Bakery Products</option>
+          </select>
+        </div>
         <div class="kitchen-menu-actions">
           <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
@@ -1308,6 +1374,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=69"></script>
+  <script src="/app.js?v=70"></script>
 </body>
 </html>
