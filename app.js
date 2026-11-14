@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v68 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v69 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v68";
+const CURRENT_APP_VERSION = "v69";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -181,6 +181,14 @@ function openLiveMenu(pushToHistory = true) {
 
 function openFestiveSpecial() {
   alert("🎉 Festive Special Menu is coming soon! Check back during the holidays.");
+}
+
+function openPreservedFoods() {
+  alert("🫙 Preserved Food and Condiments menu is coming soon!");
+}
+
+function openBakeryProducts() {
+  alert("🥐 Bakery Products menu is coming soon!");
 }
 
 // ==========================================================================
