@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v65 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v66 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v65";
+const CURRENT_APP_VERSION = "v66";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -878,12 +878,17 @@ function toggleAppDropdown(forceState) {
 // ==========================================================================
 // 10. RENDER KITCHEN MENU & SEARCH CLEAR
 // ==========================================================================
-function clearKitchenSearch() {
+function resetKitchenSearchState() {
   const searchInput = document.getElementById('kitchen-menu-search');
-  if (searchInput) {
-    searchInput.value = '';
-    searchInput.focus();
-  }
+  const clearBtn = document.getElementById('clear-kitchen-search');
+  if (searchInput) searchInput.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
+}
+
+function clearKitchenSearch() {
+  resetKitchenSearchState();
+  const searchInput = document.getElementById('kitchen-menu-search');
+  if (searchInput) searchInput.focus();
   renderKitchenMenu();
 }
 
@@ -1368,6 +1373,8 @@ function enterKitchenMode() {
   if (!isKitchenMode) history.pushState({ kitchenMode: true }, '', '#kitchen');
   isKitchenMode = true;
 
+  resetKitchenSearchState();
+
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
 
@@ -1415,6 +1422,7 @@ function exitKitchenMode(triggerHistoryBack = true) {
   if (!isKitchenMode) return;
   isKitchenMode = false;
 
+  resetKitchenSearchState();
   toggleAppDropdown(false);
   closeKitchenSubPage(false);
   if (triggerHistoryBack && window.location.hash.startsWith('#kitchen')) history.back();
@@ -1463,7 +1471,10 @@ function closeKitchenSubPage(triggerBack = true) {
   document.getElementById('customer-data-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'none';
-  if (isKitchenMode) document.getElementById('kitchen-view').style.display = 'flex';
+  if (isKitchenMode) {
+    document.getElementById('kitchen-view').style.display = 'flex';
+    renderKitchenMenu();
+  }
   if (triggerBack && (window.location.hash === '#kitchen-customers' || window.location.hash === '#kitchen-payments' || window.location.hash === '#kitchen-orders')) {
     history.back();
   }
