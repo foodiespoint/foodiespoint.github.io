@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=63">
+  <link rel="manifest" href="/manifest.json?v=64">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -48,7 +48,8 @@
     }
 
     /* SPLASH / LANDING SCREEN - Pure solid white */
-    #app-splash-screen, #menu-transition-splash {
+    #app-splash-screen {
+      display: none; 
       position: fixed;
       inset: 0;
       background: var(--white);
@@ -56,15 +57,7 @@
       transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
-    #app-splash-screen {
-      display: none; 
-    }
-
-    #menu-transition-splash {
-      display: none;
-    }
-
-    #app-splash-screen.fade-out, #menu-transition-splash.fade-out {
+    #app-splash-screen.fade-out {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -89,7 +82,7 @@
     }
 
     .splash-logo {
-      width: 46px; /* Scaled down */
+      width: 46px;
       height: auto;
     }
 
@@ -102,7 +95,7 @@
 
     .splash-title {
       color: var(--primary-color);
-      font-size: 1.8rem; /* Scaled down */
+      font-size: 1.8rem;
       font-weight: 800;
       letter-spacing: -0.5px;
       margin: 0;
@@ -111,12 +104,12 @@
 
     .splash-tagline {
       color: #666;
-      font-size: 0.85rem; /* Scaled down */
+      font-size: 0.85rem;
       font-weight: 500;
       margin: 4px 0 0 0;
     }
 
-    /* LOADING SPINNER BOXES - Starts Centered */
+    /* LOADING SPINNER BOX - Starts Centered */
     .splash-loader-box {
       position: absolute;
       top: 50%;
@@ -341,7 +334,7 @@
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--text-dark);
-      display: none; /* Hidden on customer dashboards by default */
+      display: none;
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -965,7 +958,7 @@
   <!-- APP LANDING / SPLASH SCREEN -->
   <div id="app-splash-screen">
     
-    <!-- TITLE & LOGO AT THE TOP (Moved to 5% Down) -->
+    <!-- TITLE & LOGO AT THE TOP (5% Down) -->
     <div id="splash-header-box" class="splash-header-box">
       <div class="splash-brand-row">
         <img id="splash-logo" class="splash-logo" src="/icon.png" alt="Foodies Point Logo">
@@ -987,17 +980,6 @@
       Login & Enter
     </a>
 
-  </div>
-
-  <!-- INTERNAL MENU AD TRANSITION SPLASH -->
-  <div id="menu-transition-splash">
-    <!-- Clean white screen: NO logo or title in this transition -->
-
-    <!-- LOADER STARTS DEAD CENTER, SNAPS TO 25% TOP WHEN AD APPEARS -->
-    <div id="menu-splash-loader-box" class="splash-loader-box" style="display:flex;">
-      <span class="splash-loading-text">Loading Live Menu...</span>
-      <div class="splash-loader"></div>
-    </div>
   </div>
 
   <!-- IRREMOVABLE INSTALL GATE OVERLAY -->
@@ -1029,11 +1011,10 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v63-Beta</span>
+          <span id="kitchen-version-badge">v64-Beta</span>
         </div>
 
         <div class="header-right-group">
-          <!-- HAMBURGER ICON ONLY SHOWN IN KITCHEN MODE NOW -->
           <button class="btn-menu-icon" id="header-main-menu-btn" onclick="toggleAppDropdown()" aria-label="Menu" style="display: none;">☰</button>
         </div>
       </header>
@@ -1046,8 +1027,8 @@
         </div>
 
         <div class="dash-grid">
-          <!-- Button 1: Live Menu (TRIGGERS AD TRANSITION) -->
-          <div class="dash-card" onclick="triggerMenuAdTransition()">
+          <!-- Button 1: Live Menu (OPENS DIRECTLY) -->
+          <div class="dash-card" onclick="openLiveMenu()">
             <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
             <div class="dash-text">
               <h3>Daily Live Menu</h3>
@@ -1286,6 +1267,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=63"></script>
+  <script src="/app.js?v=64"></script>
 </body>
 </html>
