@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v70 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v71 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v70";
+const CURRENT_APP_VERSION = "v71";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -116,8 +116,7 @@ function updateDashboardMenuHighlight(menuKey) {
   if (!cfg) return;
 
   const card = document.getElementById(cfg.cardId);
-  const badge = document.getElementById(cfg.badgeId);
-  if (!card || !badge) return;
+  if (!card) return;
 
   const snapshot = menuSnapshotsByKey[menuKey];
   const currentIds = snapshot ? Object.keys(snapshot) : [];
@@ -131,7 +130,6 @@ function updateDashboardMenuHighlight(menuKey) {
   const newItemIds = currentIds.filter(id => !seenIds.includes(id));
 
   if (newItemIds.length > 0) {
-    badge.textContent = newItemIds.length > 1 ? `NEW (+${newItemIds.length})` : 'NEW';
     card.classList.add('has-new-items');
   } else {
     card.classList.remove('has-new-items');
