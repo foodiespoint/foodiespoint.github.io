@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v63 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v64 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v63";
+const CURRENT_APP_VERSION = "v64";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -29,7 +29,7 @@ try {
 }
 
 const DOM_SAFE_IDS = [
-  'app-root', 'install-gate-overlay', 'app-splash-screen', 'menu-transition-splash',
+  'app-root', 'install-gate-overlay', 'app-splash-screen',
   'app-dropdown', 'app-dropdown-backdrop', 'add-item-modal', 'edit-item-modal', 
   'order-options-modal', 'delivery-charge-modal', 'profile-modal', 
   'notification-permission-modal', 'pin-modal'
@@ -48,7 +48,7 @@ function executeAppLogin() {
   if (headerBox) headerBox.style.display = 'none';
   if (loaderBox) {
     loaderBox.style.display = 'flex';
-    loaderBox.classList.remove('ad-snapped'); // Ensure it starts perfectly centered
+    loaderBox.classList.remove('ad-snapped');
   }
 
   if (splash) {
@@ -130,7 +130,6 @@ function executeAppLogin() {
     checkNodes(document.documentElement);
 
     if (adDetected) {
-      // Snap loader up immediately when ad is found
       if (loaderBox) loaderBox.classList.add('ad-snapped');
       
       clearInterval(trackerInterval);
@@ -152,125 +151,7 @@ function executeAppLogin() {
 }
 
 // ==========================================================================
-// 2B. INTERNAL MENU TRANSITION AD ENGINE
-// ==========================================================================
-function triggerMenuAdTransition() {
-  const transSplash = document.getElementById('menu-transition-splash');
-  const menuLoader = document.getElementById('menu-splash-loader-box');
-
-  if (transSplash) {
-    transSplash.style.display = 'block';
-    transSplash.style.opacity = '1';
-    transSplash.classList.remove('fade-out');
-  }
-  
-  if (menuLoader) {
-    menuLoader.classList.remove('ad-snapped'); // Ensure loader starts perfectly centered
-  }
-
-  let adDetected = false;
-  let transitionDone = false;
-
-  const completeTransition = () => {
-    if (transitionDone) return;
-    transitionDone = true;
-
-    const purgeAllAds = () => {
-      Array.from(document.body.children).forEach(child => {
-        if (!DOM_SAFE_IDS.includes(child.id) && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-          child.remove();
-        }
-      });
-      Array.from(document.documentElement.children).forEach(child => {
-        if (child.tagName !== 'HEAD' && child.tagName !== 'BODY') {
-          child.remove();
-        }
-      });
-    };
-
-    purgeAllAds();
-    let purgeCount = 0;
-    const purgeInterval = setInterval(() => {
-      purgeAllAds();
-      purgeCount++;
-      if (purgeCount > 20) clearInterval(purgeInterval);
-    }, 100);
-
-    if (transSplash) {
-      transSplash.classList.add('fade-out');
-      setTimeout(() => {
-        transSplash.style.display = 'none';
-        openLiveMenu();
-      }, 400);
-    }
-  };
-
-  const stripAdOverlays = () => {
-    Array.from(document.body.children).forEach(child => {
-      if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
-        const st = window.getComputedStyle(child);
-        if (st.position === 'fixed' || st.position === 'absolute') {
-          child.style.setProperty('backdrop-filter', 'none', 'important');
-          child.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-          
-          if (st.backgroundColor && st.backgroundColor !== 'rgba(0, 0, 0, 0)' && st.backgroundColor !== 'transparent') {
-            child.style.setProperty('background', 'transparent', 'important');
-            child.style.setProperty('background-color', 'transparent', 'important');
-          }
-        }
-      }
-    });
-  };
-
-  const trackerInterval = setInterval(() => {
-    if (transitionDone) return clearInterval(trackerInterval);
-
-    stripAdOverlays();
-
-    if (!adDetected) {
-      const checkNodes = (parent) => {
-        Array.from(parent.children).forEach(child => {
-          if (!DOM_SAFE_IDS.includes(child.id) && child.tagName === 'DIV') {
-            const st = window.getComputedStyle(child);
-            if ((st.position === 'fixed' || st.position === 'absolute') && parseInt(st.zIndex || 0) > 9000) {
-              adDetected = true;
-            }
-          }
-        });
-      };
-
-      checkNodes(document.body);
-      checkNodes(document.documentElement);
-
-      if (adDetected) {
-        // Ad detected: snap loader from center to top 25% immediately
-        if (menuLoader) {
-          menuLoader.classList.add('ad-snapped');
-        }
-
-        clearInterval(trackerInterval);
-        setTimeout(completeTransition, 3500);
-      }
-    }
-  }, 100);
-
-  // Inject DIRECTLY into DOM so the user click correctly validates the ad
-  const inlineVignette = document.createElement('script');
-  inlineVignette.id = 'monetag-vignette-beta-menu-' + Date.now();
-  inlineVignette.innerHTML = `(function(s){s.dataset.zone='12091985',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-  document.body.appendChild(inlineVignette);
-
-  // Faster Failsafe: if Monetag is blocked or refuses to serve an ad, transition after 5 seconds
-  setTimeout(() => {
-    if (!adDetected) {
-      clearInterval(trackerInterval);
-      completeTransition();
-    }
-  }, 5000);
-}
-
-// ==========================================================================
-// 2C. CUSTOMER DASHBOARD ROUTING ENGINE
+// 2B. CUSTOMER DASHBOARD ROUTING ENGINE
 // ==========================================================================
 function showDashboard(pushToHistory = true) {
   currentAppView = 'dashboard';
@@ -387,9 +268,7 @@ function urlBase64ToUint8Array(base64String) {
 
 function checkAppOnboarding() {
   const splash = document.getElementById('app-splash-screen');
-  const transSplash = document.getElementById('menu-transition-splash');
   if (splash && splash.style.display !== 'none' && !splash.classList.contains('fade-out')) return; 
-  if (transSplash && transSplash.style.display !== 'none' && !transSplash.classList.contains('fade-out')) return; 
 
   if (isKitchenMode) {
      document.getElementById('profile-modal').style.display = 'none';
@@ -1678,7 +1557,7 @@ function fetchAndRenderPaymentLedger() {
 
       row.innerHTML = `
         <div style="flex: 1;">
-          <div style="font-size:0.9rem; font-weight: 700; color:#2D2D2D;">${dateStr} <span style="font-weight: normal; color: #888; font-size: 0.75margin-left: 4px;">(#${order.orderId})</span></div>
+          <div style="font-size:0.9rem; font-weight: 700; color:#2D2D2D;">${dateStr} <span style="font-weight: normal; color: #888; font-size: 0.75rem; margin-left: 4px;">(#${order.orderId})</span></div>
           <div style="font-size: 0.95rem; color: #D9534F; font-weight: 700; margin: 4px 0;">${totalDisplay}</div>
           <div style="font-size:0.8rem; color:#666;">👤 ${order.customerName || 'Guest'} (${order.customerMobile || 'N/A'})</div>
         </div>
