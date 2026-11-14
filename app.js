@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v64 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v65 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v64";
+const CURRENT_APP_VERSION = "v65";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -876,14 +876,31 @@ function toggleAppDropdown(forceState) {
 }
 
 // ==========================================================================
-// 10. RENDER KITCHEN MENU
+// 10. RENDER KITCHEN MENU & SEARCH CLEAR
 // ==========================================================================
+function clearKitchenSearch() {
+  const searchInput = document.getElementById('kitchen-menu-search');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  renderKitchenMenu();
+}
+
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
   if (!container) return;
   container.innerHTML = '';
 
-  const searchQuery = (document.getElementById('kitchen-menu-search')?.value || '').toLowerCase();
+  const searchInput = document.getElementById('kitchen-menu-search');
+  const clearBtn = document.getElementById('clear-kitchen-search');
+  const rawQuery = searchInput?.value || '';
+
+  if (clearBtn) {
+    clearBtn.style.display = rawQuery.length > 0 ? 'flex' : 'none';
+  }
+
+  const searchQuery = rawQuery.toLowerCase();
   const filteredItems = activeMenuItems.filter(item => 
     item.name.toLowerCase().includes(searchQuery) || item.category.toLowerCase().includes(searchQuery)
   );
