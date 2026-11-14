@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=64">
+  <link rel="manifest" href="/manifest.json?v=65">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -689,12 +689,13 @@
     }
     
     .search-bar-container {
+      position: relative;
       margin-bottom: 14px;
     }
     
     .search-bar-container input {
       width: 100%;
-      padding: 10px 14px;
+      padding: 10px 38px 10px 14px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 0.95rem;
@@ -703,6 +704,30 @@
     
     .search-bar-container input:focus {
       border-color: var(--primary-color);
+    }
+
+    .btn-clear-search {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: #E0E0E0;
+      color: #555;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .btn-clear-search:active {
+      background: #CCCCCC;
     }
 
     #kitchen-view {
@@ -1011,7 +1036,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v64-Beta</span>
+          <span id="kitchen-version-badge">v65-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1093,7 +1118,8 @@
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
         <div class="search-bar-container">
-          <input type="text" id="kitchen-menu-search" placeholder="Search menu..." onkeyup="renderKitchenMenu()">
+          <input type="text" id="kitchen-menu-search" placeholder="Search menu..." oninput="renderKitchenMenu()">
+          <button type="button" id="clear-kitchen-search" class="btn-clear-search" onclick="clearKitchenSearch()" aria-label="Clear search">✕</button>
         </div>
         <div class="menu-list" id="kitchen-menu-container"></div>
       </section>
@@ -1267,6 +1293,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=64"></script>
+  <script src="/app.js?v=65"></script>
 </body>
 </html>
