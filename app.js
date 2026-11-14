@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v67 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v68 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v67";
+const CURRENT_APP_VERSION = "v68";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
