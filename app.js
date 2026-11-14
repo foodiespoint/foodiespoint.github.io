@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v66 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v67 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v66";
+const CURRENT_APP_VERSION = "v67";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -1446,6 +1446,7 @@ function exitKitchenMode(triggerHistoryBack = true) {
 // ==========================================================================
 function openKitchenOrdersPage() {
   toggleAppDropdown(false);
+  resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'orders' }, '', '#kitchen-orders');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'flex';
@@ -1453,6 +1454,7 @@ function openKitchenOrdersPage() {
 
 function openCustomerDataPage() {
   toggleAppDropdown(false);
+  resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'customers' }, '', '#kitchen-customers');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-data-view').style.display = 'flex';
@@ -1461,6 +1463,7 @@ function openCustomerDataPage() {
 
 function openPaymentDetailsPage() {
   toggleAppDropdown(false);
+  resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'payments' }, '', '#kitchen-payments');
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'flex';
@@ -1468,6 +1471,7 @@ function openPaymentDetailsPage() {
 }
 
 function closeKitchenSubPage(triggerBack = true) {
+  resetKitchenSearchState();
   document.getElementById('customer-data-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'none';
