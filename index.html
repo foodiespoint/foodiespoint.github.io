@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=72">
+  <link rel="manifest" href="/manifest.json?v=73">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1075,7 +1075,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v72-Beta</span>
+          <span id="kitchen-version-badge">v73-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1240,7 +1240,7 @@
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
           <button class="btn-publish" onclick="publishDailyMenu()">Publish Menu</button>
         </div>
-        <div class="search-bar-container">
+        <div class="search-bar-container" id="kitchen-search-bar-container">
           <input type="text" id="kitchen-menu-search" placeholder="Search menu..." oninput="renderKitchenMenu()">
           <button type="button" id="clear-kitchen-search" class="btn-clear-search" onclick="clearKitchenSearch()" aria-label="Clear search">✕</button>
         </div>
@@ -1298,7 +1298,7 @@
         <span class="form-label">Dish Name:</span>
         <input type="text" id="add-item-name" placeholder="e.g. Masala Dosa">
 
-        <span class="form-label" style="margin-top: 8px;">Category:</span>
+        <span class="form-label" id="add-item-category-label" style="margin-top: 8px;">Category:</span>
         <select id="add-item-category-select" onchange="handleCategorySelectChange()"></select>
         <input type="text" id="add-item-category-new" style="margin-top: 8px; display: none;" placeholder="Enter new category name">
         
@@ -1416,6 +1416,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=72"></script>
+  <script src="/app.js?v=73"></script>
 </body>
 </html>
