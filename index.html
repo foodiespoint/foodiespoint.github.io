@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=71">
+  <link rel="manifest" href="/manifest.json?v=72">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -347,15 +347,14 @@
       font-weight: 700;
     }
 
-    /* HOME DASHBOARD VIEW STYLES */
-    #home-dashboard-view {
+    /* HOME DASHBOARD & KITCHEN DASHBOARD HUB STYLES */
+    #home-dashboard-view, #kitchen-dashboard-view {
       display: none; 
       position: absolute;
       top: 56px;
       bottom: 0;
       left: 0;
       right: 0;
-      z-index: 1000;
       background: var(--bg-light);
       flex-direction: column;
       max-width: 600px;
@@ -363,6 +362,14 @@
       padding: 24px 20px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    #home-dashboard-view {
+      z-index: 1000;
+    }
+
+    #kitchen-dashboard-view {
+      z-index: 1450;
     }
 
     .dash-welcome {
@@ -374,6 +381,13 @@
       color: var(--text-dark);
       font-weight: 800;
       letter-spacing: -0.3px;
+    }
+
+    .dash-welcome p {
+      color: #666;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-top: 4px;
     }
 
     .dash-grid {
@@ -677,26 +691,6 @@
     .status-PENDING { background: #FFF3E0; color: #EF6C00; }
     .status-ACCEPTED { background: #E8F5E9; color: #2E7D32; }
     .status-REJECTED { background: #FFEBEE; color: #C62828; }
-
-    .kitchen-target-menu-bar {
-      margin-bottom: 12px;
-    }
-
-    .kitchen-target-menu-bar select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      background: var(--white);
-      outline: none;
-    }
-
-    .kitchen-target-menu-bar select:focus {
-      border-color: var(--primary-color);
-    }
 
     .kitchen-menu-actions {
       display: flex;
@@ -1081,7 +1075,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v71-Beta</span>
+          <span id="kitchen-version-badge">v72-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1089,7 +1083,7 @@
         </div>
       </header>
 
-      <!-- HOME DASHBOARD HUB -->
+      <!-- HOME DASHBOARD HUB (CUSTOMERS) -->
       <main id="home-dashboard-view">
         <div class="dash-welcome">
           <h2>What are you craving today?</h2>
@@ -1178,18 +1172,69 @@
         </div>
       </main>
 
-      <!-- FULL PAGE MENU CONSOLE -->
-      <section id="kitchen-view">
-        <h2 class="section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
-        <div class="kitchen-target-menu-bar">
-          <select id="kitchen-target-menu-select" onchange="switchKitchenTargetMenu()">
-            <option value="daily">🍲 Target: Daily Live Menu</option>
-            <option value="festive">🎉 Target: Festive Special</option>
-            <option value="party">🎊 Target: Bulk / Party Orders</option>
-            <option value="preserved">🫙 Target: Preserved Food and Condiments</option>
-            <option value="bakery">🥐 Target: Bakery Products</option>
-          </select>
+      <!-- KITCHEN CONSOLE SECTION HUB -->
+      <section id="kitchen-dashboard-view">
+        <div class="dash-welcome">
+          <h2>Kitchen Console</h2>
+          <p>Select a menu section to manage and publish</p>
         </div>
+
+        <div class="dash-grid">
+          <!-- Kitchen Card 1: Daily Live Menu -->
+          <div class="dash-card" onclick="openKitchenMenuSection('daily')">
+            <div class="dash-icon" style="background: #FFF3E0; color: #E65100;">🍲</div>
+            <div class="dash-text">
+              <h3>Daily Live Menu</h3>
+              <p>Fresh meals, updated daily</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Kitchen Card 2: Festive Special -->
+          <div class="dash-card" onclick="openKitchenMenuSection('festive')">
+            <div class="dash-icon" style="background: #E8F5E9; color: #2E7D32;">🎉</div>
+            <div class="dash-text">
+              <h3>Festive Special</h3>
+              <p>Exclusive combos & sweets</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+          
+          <!-- Kitchen Card 3: Bulk / Party Orders -->
+          <div class="dash-card" onclick="openKitchenMenuSection('party')">
+            <div class="dash-icon" style="background: #E3F2FD; color: #1565C0;">🎊</div>
+            <div class="dash-text">
+              <h3>Bulk / Party Orders</h3>
+              <p>For your special events</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Kitchen Card 4: Preserved Food and Condiments -->
+          <div class="dash-card" onclick="openKitchenMenuSection('preserved')">
+            <div class="dash-icon" style="background: #FFF8E1; color: #F57F17;">🫙</div>
+            <div class="dash-text">
+              <h3>Preserved Food and Condiments</h3>
+              <p>Homemade pickles, chutneys & spreads</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+
+          <!-- Kitchen Card 5: Bakery Products -->
+          <div class="dash-card" onclick="openKitchenMenuSection('bakery')">
+            <div class="dash-icon" style="background: #FCE4EC; color: #C2185B;">🥐</div>
+            <div class="dash-text">
+              <h3>Bakery Products</h3>
+              <p>Fresh cakes, cupcakes & baked treats</p>
+            </div>
+            <div class="dash-arrow">➔</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FULL PAGE MENU CONSOLE (SECTION EDITOR) -->
+      <section id="kitchen-view">
+        <h2 class="section-title" id="kitchen-section-title" style="margin: 4px 0 10px 0;">Kitchen Console - Menu</h2>
         <div class="kitchen-menu-actions">
           <button class="btn-clear-menu" onclick="clearDailyMenu()">🗑 Clear</button>
           <button class="btn-add-item" onclick="openAddItemModal()">+ Add Item</button>
@@ -1371,6 +1416,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=71"></script>
+  <script src="/app.js?v=72"></script>
 </body>
 </html>
