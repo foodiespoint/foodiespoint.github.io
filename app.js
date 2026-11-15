@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v72 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v73 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v72";
+const CURRENT_APP_VERSION = "v73";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -41,46 +41,56 @@ const DOM_SAFE_IDS = [
 const MENU_CONFIGS = {
   daily: {
     key: 'daily',
+    icon: '🍲',
     label: 'Daily Live Menu',
     headerTitle: 'Daily Menu',
     sectionTitle: "Today's Live Menu",
     dbPath: 'beta_dailyMenu',
+    catalogPath: 'beta_menu_catalog',
     cardId: 'dash-card-daily',
     badgeId: 'dash-badge-daily'
   },
   festive: {
     key: 'festive',
+    icon: '🎉',
     label: 'Festive Special',
     headerTitle: 'Festive Special',
     sectionTitle: 'Festive Special Menu',
     dbPath: 'beta_menus/festive',
+    catalogPath: 'beta_section_catalogs/festive',
     cardId: 'dash-card-festive',
     badgeId: 'dash-badge-festive'
   },
   party: {
     key: 'party',
+    icon: '🎊',
     label: 'Bulk / Party Orders',
     headerTitle: 'Bulk / Party Orders',
     sectionTitle: 'Bulk & Party Menu',
     dbPath: 'beta_menus/party',
+    catalogPath: 'beta_section_catalogs/party',
     cardId: 'dash-card-party',
     badgeId: 'dash-badge-party'
   },
   preserved: {
     key: 'preserved',
+    icon: '🫙',
     label: 'Preserved Food and Condiments',
     headerTitle: 'Preserved & Condiments',
     sectionTitle: 'Preserved Food & Condiments',
     dbPath: 'beta_menus/preserved',
+    catalogPath: 'beta_section_catalogs/preserved',
     cardId: 'dash-card-preserved',
     badgeId: 'dash-badge-preserved'
   },
   bakery: {
     key: 'bakery',
+    icon: '🥐',
     label: 'Bakery Products',
     headerTitle: 'Bakery Products',
     sectionTitle: 'Fresh Bakery Menu',
     dbPath: 'beta_menus/bakery',
+    catalogPath: 'beta_section_catalogs/bakery',
     cardId: 'dash-card-bakery',
     badgeId: 'dash-badge-bakery'
   }
@@ -95,6 +105,18 @@ const menuSnapshotsByKey = {
   preserved: null,
   bakery: null
 };
+
+const sectionCatalogsByKey = {
+  festive: [],
+  party: [],
+  preserved: [],
+  bakery: []
+};
+
+function getCatalogForMenu(menuKey) {
+  if (menuKey === 'daily') return activeMenuItems;
+  return sectionCatalogsByKey[menuKey] || [];
+}
 
 function getSeenMenuItemIds(menuKey) {
   try {
@@ -653,11 +675,12 @@ async function notifyKitchenNewOrder(orderData) {
     if (!subsObj) return;
 
     const subscriptions = Object.values(subsObj);
+    const sectionLabel = orderData.menuLabel || 'Daily Live Menu';
     fetch(`${RENDER_BACKEND_URL}/api/broadcast`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: "New Beta Order! 🔔",
+        title: `New ${sectionLabel} Order! 🔔`,
         message: `${orderData.customerName} ordered ${orderData.orderType} for ${orderData.scheduledTime}`,
         subscriptions
       })
@@ -876,10 +899,22 @@ function loadDynamicMenuCatalog() {
   db.ref('beta_menu_catalog').on('value', (snap) => {
     const catalog = snap.val();
     activeMenuItems = catalog ? catalog : [...DEFAULT_MENU_ITEMS];
-    if (isKitchenMode) renderKitchenMenu();
-    if (!isKitchenMode && currentAppView === 'live-menu') {
-      renderCustomerMenuFromSnapshot(menuSnapshotsByKey[activeCustomerMenuKey]);
+    if (isKitchenMode && activeKitchenMenuKey === 'daily') renderKitchenMenu();
+    if (!isKitchenMode && currentAppView === 'live-menu' && activeCustomerMenuKey === 'daily') {
+      renderCustomerMenuFromSnapshot(menuSnapshotsByKey.daily);
     }
+  });
+
+  ['festive', 'party', 'preserved', 'bakery'].forEach((menuKey) => {
+    const cfg = MENU_CONFIGS[menuKey];
+    db.ref(cfg.catalogPath).on('value', (snap) => {
+      const catalog = snap.val();
+      sectionCatalogsByKey[menuKey] = Array.isArray(catalog) ? catalog : [];
+      if (isKitchenMode && activeKitchenMenuKey === menuKey) renderKitchenMenu();
+      if (!isKitchenMode && currentAppView === 'live-menu' && activeCustomerMenuKey === menuKey) {
+        renderCustomerMenuFromSnapshot(menuSnapshotsByKey[menuKey]);
+      }
+    });
   });
 }
 
@@ -889,24 +924,37 @@ function openAddItemModal() {
   
   const select = document.getElementById('add-item-category-select');
   const newCatInput = document.getElementById('add-item-category-new');
+  const catLabel = document.getElementById('add-item-category-label');
   
   select.innerHTML = '';
-  newCatInput.style.display = 'none';
   newCatInput.value = '';
 
-  const categories = [...new Set(activeMenuItems.map(item => item.category))];
-  
-  categories.forEach(cat => {
-    const opt = document.createElement('option');
-    opt.value = cat;
-    opt.textContent = cat;
-    select.appendChild(opt);
-  });
-  
-  const addOpt = document.createElement('option');
-  addOpt.value = 'ADD_NEW';
-  addOpt.textContent = '➕ Add New Category...';
-  select.appendChild(addOpt);
+  if (activeKitchenMenuKey === 'daily') {
+    if (catLabel) catLabel.textContent = 'Category:';
+    select.style.display = 'block';
+    newCatInput.style.display = 'none';
+    newCatInput.placeholder = 'Enter new category name';
+
+    const categories = [...new Set(activeMenuItems.map(item => item.category).filter(Boolean))];
+    
+    categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      select.appendChild(opt);
+    });
+    
+    const addOpt = document.createElement('option');
+    addOpt.value = 'ADD_NEW';
+    addOpt.textContent = '➕ Add New Category...';
+    select.appendChild(addOpt);
+  } else {
+    // Non-daily sections: ONLY show the optional Add New Category input
+    if (catLabel) catLabel.textContent = 'Add New Category (Optional):';
+    select.style.display = 'none';
+    newCatInput.style.display = 'block';
+    newCatInput.placeholder = 'Leave empty if not needed';
+  }
 
   document.getElementById('add-item-modal').style.display = 'flex';
 }
@@ -929,11 +977,16 @@ function saveNewItem() {
   const name = document.getElementById('add-item-name').value.trim();
   const price = parseInt(document.getElementById('add-item-price').value);
   
-  let category = document.getElementById('add-item-category-select').value;
-  if (category === 'ADD_NEW') {
+  let category = '';
+  if (activeKitchenMenuKey === 'daily') {
+    category = document.getElementById('add-item-category-select').value;
+    if (category === 'ADD_NEW') {
+      category = document.getElementById('add-item-category-new').value.trim();
+    }
+    if (!category) category = 'Specials';
+  } else {
     category = document.getElementById('add-item-category-new').value.trim();
   }
-  if (!category) category = 'Specials';
 
   if (!name || isNaN(price) || price <= 0) {
     alert("Please enter a valid Name and Price.");
@@ -947,13 +1000,23 @@ function saveNewItem() {
     price: price
   };
 
-  activeMenuItems.push(newItem);
-  if (db) db.ref('beta_menu_catalog').set(activeMenuItems);
+  if (activeKitchenMenuKey === 'daily') {
+    activeMenuItems.push(newItem);
+    if (db) db.ref('beta_menu_catalog').set(activeMenuItems);
+  } else {
+    const cfg = MENU_CONFIGS[activeKitchenMenuKey];
+    const list = sectionCatalogsByKey[activeKitchenMenuKey] || [];
+    list.push(newItem);
+    sectionCatalogsByKey[activeKitchenMenuKey] = list;
+    if (db && cfg) db.ref(cfg.catalogPath).set(list);
+  }
+  renderKitchenMenu();
   closeAddItemModal();
 }
 
 function openEditItemModal(id) {
-  const item = activeMenuItems.find(i => i.id === id);
+  const catalog = getCatalogForMenu(activeKitchenMenuKey);
+  const item = catalog.find(i => i.id === id);
   if (!item) return;
   document.getElementById('edit-item-id').value = item.id;
   document.getElementById('edit-item-name').value = item.name;
@@ -975,12 +1038,24 @@ function saveEditedItem() {
     return;
   }
 
-  const itemIndex = activeMenuItems.findIndex(i => i.id === id);
-  if (itemIndex > -1) {
-    activeMenuItems[itemIndex].name = newName;
-    activeMenuItems[itemIndex].price = newPrice;
-    if (db) db.ref('beta_menu_catalog').set(activeMenuItems);
+  if (activeKitchenMenuKey === 'daily') {
+    const itemIndex = activeMenuItems.findIndex(i => i.id === id);
+    if (itemIndex > -1) {
+      activeMenuItems[itemIndex].name = newName;
+      activeMenuItems[itemIndex].price = newPrice;
+      if (db) db.ref('beta_menu_catalog').set(activeMenuItems);
+    }
+  } else {
+    const cfg = MENU_CONFIGS[activeKitchenMenuKey];
+    const list = sectionCatalogsByKey[activeKitchenMenuKey] || [];
+    const itemIndex = list.findIndex(i => i.id === id);
+    if (itemIndex > -1) {
+      list[itemIndex].name = newName;
+      list[itemIndex].price = newPrice;
+      if (db && cfg) db.ref(cfg.catalogPath).set(list);
+    }
   }
+  renderKitchenMenu();
   closeEditItemModal();
 }
 
@@ -1023,8 +1098,24 @@ function clearKitchenSearch() {
 
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
+  const searchBarContainer = document.getElementById('kitchen-search-bar-container');
   if (!container) return;
   container.innerHTML = '';
+
+  const currentCatalog = getCatalogForMenu(activeKitchenMenuKey);
+
+  // For non-daily sections, keep the view completely clean (only Clear, + Add Item, Publish buttons) when empty
+  if (searchBarContainer) {
+    if (activeKitchenMenuKey !== 'daily' && currentCatalog.length === 0) {
+      searchBarContainer.style.display = 'none';
+    } else {
+      searchBarContainer.style.display = 'block';
+    }
+  }
+
+  if (activeKitchenMenuKey !== 'daily' && currentCatalog.length === 0) {
+    return;
+  }
 
   const searchInput = document.getElementById('kitchen-menu-search');
   const clearBtn = document.getElementById('clear-kitchen-search');
@@ -1035,8 +1126,8 @@ function renderKitchenMenu() {
   }
 
   const searchQuery = rawQuery.toLowerCase();
-  const filteredItems = activeMenuItems.filter(item => 
-    item.name.toLowerCase().includes(searchQuery) || item.category.toLowerCase().includes(searchQuery)
+  const filteredItems = currentCatalog.filter(item => 
+    item.name.toLowerCase().includes(searchQuery) || (item.category || '').toLowerCase().includes(searchQuery)
   );
 
   const checkedDishes = filteredItems.filter(d => kitchenCheckedState[d.id]);
@@ -1046,12 +1137,15 @@ function renderKitchenMenu() {
     const card = document.createElement('div');
     card.className = 'menu-card';
     card.setAttribute('data-item-id', dish.id);
+    const catLabelHtml = dish.category
+      ? ` <span style="font-size:0.78rem; color:#777; font-weight:normal;">(${dish.category})</span>`
+      : '';
 
     card.innerHTML = `
       <div class="dish-select-area">
         <input type="checkbox" class="dish-checkbox" id="chk-top-${dish.id}" checked onchange="toggleKitchenItem('${dish.id}', false)">
         <div class="dish-info">
-          <h4>${dish.name} <span style="font-size:0.78rem; color:#777; font-weight:normal;">(${dish.category})</span></h4>
+          <h4>${dish.name}${catLabelHtml}</h4>
           <div class="price">₹${dish.price}</div>
         </div>
       </div>
@@ -1064,7 +1158,27 @@ function renderKitchenMenu() {
     container.appendChild(card);
   });
 
-  const categories = [...new Set(filteredItems.map(item => item.category))];
+  // Render uncategorized unchecked items first (for items added with an empty category)
+  const uncategorizedUnchecked = filteredItems.filter(item => !item.category && !kitchenCheckedState[item.id]);
+  uncategorizedUnchecked.forEach((dish) => {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.setAttribute('data-item-id', dish.id);
+
+    card.innerHTML = `
+      <div class="dish-select-area">
+        <input type="checkbox" class="dish-checkbox" id="chk-${dish.id}" onchange="toggleKitchenItem('${dish.id}', true)">
+        <div class="dish-info">
+          <h4>${dish.name}</h4>
+          <div class="price">₹${dish.price}</div>
+        </div>
+      </div>
+      <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
+    `;
+    container.appendChild(card);
+  });
+
+  const categories = [...new Set(filteredItems.map(item => item.category).filter(Boolean))];
   categories.forEach((cat) => {
     const uncheckedCatItems = filteredItems.filter(item => item.category === cat && !kitchenCheckedState[item.id]);
 
@@ -1193,7 +1307,9 @@ function renderCustomerMenuFromSnapshot(activeIds) {
     return;
   }
 
-  activeMenuItems.forEach((dish) => {
+  const customerCatalog = getCatalogForMenu(activeCustomerMenuKey);
+
+  customerCatalog.forEach((dish) => {
     if (activeIds[dish.id]) {
       cart[dish.id] = cart[dish.id] || 0;
       const isOOS = (activeIds[dish.id] === 'OOS');
@@ -1270,10 +1386,11 @@ function openOrderOptionsModal() {
     return;
   }
 
+  const currentCatalog = getCatalogForMenu(activeCustomerMenuKey);
   const orderItems = [];
   let totalAmount = 0;
 
-  activeMenuItems.forEach((dish) => {
+  currentCatalog.forEach((dish) => {
     const qty = cart[dish.id] || 0;
     if (qty > 0) {
       orderItems.push({ id: dish.id, name: dish.name, price: dish.price, quantity: qty });
@@ -1292,10 +1409,14 @@ function openOrderOptionsModal() {
     return;
   }
 
+  const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
+
   pendingCustomerOrder = {
     items: orderItems,
     total: totalAmount,
-    profile: JSON.parse(profileStr)
+    profile: JSON.parse(profileStr),
+    menuKey: cfg.key,
+    menuLabel: cfg.label
   };
   
   document.getElementById('order-options-modal').style.display = 'flex';
@@ -1325,14 +1446,18 @@ async function finalizeOrderPlacement() {
     pendingCustomerOrder.profile, 
     localPushSub,
     orderType,
-    scheduledTime
+    scheduledTime,
+    pendingCustomerOrder.menuKey,
+    pendingCustomerOrder.menuLabel
   );
   
   pendingCustomerOrder = null;
 }
 
-function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile, pushSub, orderType, scheduledTime) {
+function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile, pushSub, orderType, scheduledTime, menuKey, menuLabel) {
   const newOrderRef = db.ref('beta_orders').push();
+  const resolvedMenuKey = menuKey || 'daily';
+  const resolvedMenuLabel = menuLabel || (MENU_CONFIGS[resolvedMenuKey] ? MENU_CONFIGS[resolvedMenuKey].label : 'Daily Live Menu');
   
   const orderData = {
     orderId: newOrderRef.key.slice(-4).toUpperCase(),
@@ -1345,7 +1470,9 @@ function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile
     timestamp: firebase.database.ServerValue.TIMESTAMP,
     orderType: orderType,          
     scheduledTime: scheduledTime,  
-    deliveryCharge: 0              
+    deliveryCharge: 0,
+    menuKey: resolvedMenuKey,
+    menuLabel: resolvedMenuLabel
   };
 
   if (pushSub && pushSub.endpoint) {
@@ -1367,7 +1494,9 @@ function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile
         timestamp: Date.now(),
         orderType: orderType,
         scheduledTime: scheduledTime,
-        deliveryCharge: 0
+        deliveryCharge: 0,
+        menuKey: resolvedMenuKey,
+        menuLabel: resolvedMenuLabel
       };
       
       const pastOrders = JSON.parse(localStorage.getItem('fp_beta_customer_orders') || '[]');
@@ -1375,7 +1504,8 @@ function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile
       localStorage.setItem('fp_beta_customer_orders', JSON.stringify(pastOrders));
       renderCustomerOrderHistory();
 
-      activeMenuItems.forEach((dish) => { cart[dish.id] = 0; });
+      const currentCatalog = getCatalogForMenu(resolvedMenuKey);
+      currentCatalog.forEach((dish) => { cart[dish.id] = 0; });
       Object.keys(cart).forEach(id => {
         const span = document.getElementById(`qty-${id}`);
         if (span) span.textContent = 0;
@@ -1815,7 +1945,7 @@ window.addEventListener('popstate', (e) => {
 });
 
 // ==========================================================================
-// 16. LIVE KITCHEN ORDER LISTENER
+// 16. LIVE KITCHEN ORDER LISTENER (GROUPED BY ACTIVE MENU SECTIONS)
 // ==========================================================================
 function listenForKitchenOrders() {
   if (!db) return;
@@ -1843,69 +1973,97 @@ function listenForKitchenOrders() {
 
     ordersArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
+    // Group active orders by their respective menu section
+    const groupedBySection = {};
     ordersArray.forEach((order) => {
-      const card = document.createElement('div');
-      card.className = 'order-card';
-      
-      const itemsListHtml = order.items
-        .map(i => `<p style="margin: 4px 0;"><strong>${i.quantity}x</strong> ${i.name}</p>`)
-        .join('');
+      const mKey = (order.menuKey && MENU_CONFIGS[order.menuKey]) ? order.menuKey : 'daily';
+      if (!groupedBySection[mKey]) groupedBySection[mKey] = [];
+      groupedBySection[mKey].push(order);
+    });
 
-      const statusColors = {
-        PENDING: '#EF6C00',
-        ACCEPTED: '#2E7D32',
-        REJECTED: '#C62828'
-      };
-      const statusColor = statusColors[order.status] || '#D9534F';
+    // Only render sections that actually have incoming orders
+    Object.keys(MENU_CONFIGS).forEach((menuKey) => {
+      const sectionOrders = groupedBySection[menuKey];
+      if (!sectionOrders || sectionOrders.length === 0) return;
 
-      const typeEmoji = order.orderType === 'Delivery' ? '🚚' : '🥡';
-      const orderTypeHtml = `
-        <div style="font-weight: 700; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.9rem;">
-          ${typeEmoji} ${order.orderType} @ ${order.scheduledTime || 'N/A'}
-        </div>
+      const cfg = MENU_CONFIGS[menuKey];
+      const sectionBlock = document.createElement('div');
+      sectionBlock.style.cssText = 'margin-bottom: 22px;';
+
+      const sectionHeader = document.createElement('div');
+      sectionHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-bottom: 10px; background: var(--white); border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 1px 4px rgba(0,0,0,0.04);';
+      sectionHeader.innerHTML = `
+        <span style="font-size: 1rem; font-weight: 800; color: var(--text-dark);">${cfg.icon} ${cfg.label}</span>
+        <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-color); background: #FFEBEE; padding: 3px 9px; border-radius: 12px;">${sectionOrders.length}</span>
       `;
+      sectionBlock.appendChild(sectionHeader);
 
-      let actionButtonsHtml = '';
-      if (order.status === 'PENDING') {
-        actionButtonsHtml = `
-          <button class="btn-action btn-accept" onclick="acceptOrderTrigger('${order.firebaseKey}', '${order.orderType}', ${order.total})">Accept</button>
-          <button class="btn-action btn-deny" onclick="rejectOrder('${order.firebaseKey}')">Reject</button>
-        `;
-      } else {
-        actionButtonsHtml = `
-          <button class="btn-action" style="background: #EAEAEA; color: #555;" onclick="removeTicket('${order.firebaseKey}')">Remove Ticket</button>
-        `;
-      }
+      sectionOrders.forEach((order) => {
+        const card = document.createElement('div');
+        card.className = 'order-card';
+        
+        const itemsListHtml = order.items
+          .map(i => `<p style="margin: 4px 0;"><strong>${i.quantity}x</strong> ${i.name}</p>`)
+          .join('');
 
-      const dateStr = new Date(order.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      
-      let totalDisplay = `₹${order.total}`;
-      if (order.deliveryCharge > 0) {
-        totalDisplay += ` <span style="font-size:0.8rem; font-weight:normal; color:#666;">(Includes ₹${order.deliveryCharge} fee)</span>`;
-      }
+        const statusColors = {
+          PENDING: '#EF6C00',
+          ACCEPTED: '#2E7D32',
+          REJECTED: '#C62828'
+        };
+        const statusColor = statusColors[order.status] || '#D9534F';
 
-      card.innerHTML = `
-        <div class="order-header">
-          <div>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
-            <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
-              👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
-            </div>
+        const typeEmoji = order.orderType === 'Delivery' ? '🚚' : '🥡';
+        const orderTypeHtml = `
+          <div style="font-weight: 700; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.9rem;">
+            ${typeEmoji} ${order.orderType} @ ${order.scheduledTime || 'N/A'}
           </div>
-          <span style="color: ${statusColor}; font-weight: 700;">${order.status}</span>
-        </div>
-        ${orderTypeHtml}
-        <div class="order-body" style="margin: 6px 0 12px 0;">
-          ${itemsListHtml}
-          <p style="margin-top: 8px; font-weight: bold;">Total: ${totalDisplay}</p>
-        </div>
-        <div class="order-actions">
-          ${actionButtonsHtml}
-        </div>
-      `;
+        `;
 
-      ordersContainer.appendChild(card);
+        let actionButtonsHtml = '';
+        if (order.status === 'PENDING') {
+          actionButtonsHtml = `
+            <button class="btn-action btn-accept" onclick="acceptOrderTrigger('${order.firebaseKey}', '${order.orderType}', ${order.total})">Accept</button>
+            <button class="btn-action btn-deny" onclick="rejectOrder('${order.firebaseKey}')">Reject</button>
+          `;
+        } else {
+          actionButtonsHtml = `
+            <button class="btn-action" style="background: #EAEAEA; color: #555;" onclick="removeTicket('${order.firebaseKey}')">Remove Ticket</button>
+          `;
+        }
+
+        const dateStr = new Date(order.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        
+        let totalDisplay = `₹${order.total}`;
+        if (order.deliveryCharge > 0) {
+          totalDisplay += ` <span style="font-size:0.8rem; font-weight:normal; color:#666;">(Includes ₹${order.deliveryCharge} fee)</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="order-header">
+            <div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
+              <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
+              <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
+                👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
+              </div>
+            </div>
+            <span style="color: ${statusColor}; font-weight: 700;">${order.status}</span>
+          </div>
+          ${orderTypeHtml}
+          <div class="order-body" style="margin: 6px 0 12px 0;">
+            ${itemsListHtml}
+            <p style="margin-top: 8px; font-weight: bold;">Total: ${totalDisplay}</p>
+          </div>
+          <div class="order-actions">
+            ${actionButtonsHtml}
+          </div>
+        `;
+
+        sectionBlock.appendChild(card);
+      });
+
+      ordersContainer.appendChild(sectionBlock);
     });
   });
 }
