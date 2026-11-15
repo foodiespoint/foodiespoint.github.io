@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v71 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v72 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v71";
+const CURRENT_APP_VERSION = "v72";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -258,6 +258,7 @@ function showDashboard(pushToHistory = true) {
   currentAppView = 'dashboard';
   
   document.getElementById('customer-view').style.display = 'none';
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('home-dashboard-view').style.display = 'flex';
   
@@ -277,6 +278,7 @@ function openMenuCategory(menuKey = 'daily', pushToHistory = true) {
   markMenuItemsAsSeen(cfg.key);
 
   document.getElementById('home-dashboard-view').style.display = 'none';
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'flex';
   
@@ -1019,15 +1021,6 @@ function clearKitchenSearch() {
   renderKitchenMenu();
 }
 
-function switchKitchenTargetMenu() {
-  const select = document.getElementById('kitchen-target-menu-select');
-  if (!select) return;
-  activeKitchenMenuKey = select.value || 'daily';
-  resetKitchenSearchState();
-  kitchenCheckedState = { ...(menuSnapshotsByKey[activeKitchenMenuKey] || {}) };
-  renderKitchenMenu();
-}
-
 function renderKitchenMenu() {
   const container = document.getElementById('kitchen-menu-container');
   if (!container) return;
@@ -1480,7 +1473,7 @@ function listenForCustomerOrderUpdates() {
 }
 
 // ==========================================================================
-// 14. KITCHEN LOGIN & NAVIGATION
+// 14. KITCHEN LOGIN & NAVIGATION (HUB + SECTION EDITORS)
 // ==========================================================================
 const KITCHEN_PIN = "validatefoodies2026";
 let isKitchenMode = false;
@@ -1523,15 +1516,50 @@ function verifyKitchenPIN() {
   }
 }
 
+function showKitchenDashboardHub(pushToHistory = false) {
+  resetKitchenSearchState();
+  document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('customer-data-view').style.display = 'none';
+  document.getElementById('payment-details-view').style.display = 'none';
+  document.getElementById('kitchen-orders-view').style.display = 'none';
+  document.getElementById('kitchen-dashboard-view').style.display = 'flex';
+  document.getElementById('main-app-title-text').textContent = 'Foodies Point';
+
+  if (pushToHistory) {
+    history.pushState({ kitchenMode: true }, '', '#kitchen');
+  }
+}
+
+function openKitchenMenuSection(menuKey = 'daily', pushToHistory = true) {
+  const cfg = MENU_CONFIGS[menuKey] || MENU_CONFIGS.daily;
+  activeKitchenMenuKey = cfg.key;
+  resetKitchenSearchState();
+
+  kitchenCheckedState = { ...(menuSnapshotsByKey[cfg.key] || {}) };
+
+  const titleEl = document.getElementById('kitchen-section-title');
+  if (titleEl) {
+    titleEl.textContent = `Kitchen Console - ${cfg.label}`;
+  }
+
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
+  document.getElementById('customer-data-view').style.display = 'none';
+  document.getElementById('payment-details-view').style.display = 'none';
+  document.getElementById('kitchen-orders-view').style.display = 'none';
+  document.getElementById('kitchen-view').style.display = 'flex';
+
+  renderKitchenMenu();
+
+  if (pushToHistory) {
+    history.pushState({ kitchenSubPage: 'menu-editor', menuKey: cfg.key }, '', `#kitchen-menu-${cfg.key}`);
+  }
+}
+
 function enterKitchenMode() {
   if (!isKitchenMode) history.pushState({ kitchenMode: true }, '', '#kitchen');
   isKitchenMode = true;
 
   resetKitchenSearchState();
-
-  const targetSelect = document.getElementById('kitchen-target-menu-select');
-  activeKitchenMenuKey = targetSelect ? targetSelect.value : 'daily';
-  kitchenCheckedState = { ...(menuSnapshotsByKey[activeKitchenMenuKey] || {}) };
 
   document.getElementById('home-dashboard-view').style.display = 'none';
   document.getElementById('customer-view').style.display = 'none';
@@ -1542,11 +1570,10 @@ function enterKitchenMode() {
   document.getElementById('kitchen-version-badge').style.display = 'inline-block';
   document.getElementById('header-main-menu-btn').style.display = 'inline-flex';
 
-  document.getElementById('kitchen-view').style.display = 'flex';
+  showKitchenDashboardHub(false);
   
   checkAppOnboarding();
   syncKitchenPushSubscription();
-  renderKitchenMenu();
   listenForKitchenOrders();
 }
 
@@ -1555,15 +1582,28 @@ function handleHeaderBack() {
   const custPage = document.getElementById('customer-data-view');
   const payPage = document.getElementById('payment-details-view');
   const ordersPage = document.getElementById('kitchen-orders-view');
+  const kitchenMenuView = document.getElementById('kitchen-view');
   
   if ((custPage && custPage.style.display === 'flex') || 
       (payPage && payPage.style.display === 'flex') || 
       (ordersPage && ordersPage.style.display === 'flex')) {
     closeKitchenSubPage(true);
+  } else if (isKitchenMode && kitchenMenuView && kitchenMenuView.style.display === 'flex') {
+    closeKitchenMenuEditor(true);
   } else if (!isKitchenMode && currentAppView === 'live-menu') {
     showDashboard(true);
   } else {
     exitKitchenMode(true);
+  }
+}
+
+function closeKitchenMenuEditor(triggerBack = true) {
+  resetKitchenSearchState();
+  if (isKitchenMode) {
+    showKitchenDashboardHub(false);
+  }
+  if (triggerBack && window.location.hash.startsWith('#kitchen-menu-')) {
+    history.back();
   }
 }
 
@@ -1577,6 +1617,7 @@ function exitKitchenMode(triggerHistoryBack = true) {
   if (triggerHistoryBack && window.location.hash.startsWith('#kitchen')) history.back();
 
   document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   
   document.getElementById('kitchen-version-badge').style.display = 'none';
   document.getElementById('header-main-menu-btn').style.display = 'none';
@@ -1596,7 +1637,10 @@ function openKitchenOrdersPage() {
   toggleAppDropdown(false);
   resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'orders' }, '', '#kitchen-orders');
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('customer-data-view').style.display = 'none';
+  document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'flex';
 }
 
@@ -1604,7 +1648,10 @@ function openCustomerDataPage() {
   toggleAppDropdown(false);
   resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'customers' }, '', '#kitchen-customers');
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('kitchen-orders-view').style.display = 'none';
+  document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('customer-data-view').style.display = 'flex';
   fetchAndRenderCustomerDirectory();
 }
@@ -1613,7 +1660,10 @@ function openPaymentDetailsPage() {
   toggleAppDropdown(false);
   resetKitchenSearchState();
   history.pushState({ kitchenSubPage: 'payments' }, '', '#kitchen-payments');
+  document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
+  document.getElementById('kitchen-orders-view').style.display = 'none';
+  document.getElementById('customer-data-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'flex';
   fetchAndRenderPaymentLedger();
 }
@@ -1624,8 +1674,7 @@ function closeKitchenSubPage(triggerBack = true) {
   document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'none';
   if (isKitchenMode) {
-    document.getElementById('kitchen-view').style.display = 'flex';
-    renderKitchenMenu();
+    showKitchenDashboardHub(false);
   }
   if (triggerBack && (window.location.hash === '#kitchen-customers' || window.location.hash === '#kitchen-payments' || window.location.hash === '#kitchen-orders')) {
     history.back();
@@ -1752,6 +1801,9 @@ window.addEventListener('popstate', (e) => {
   if (isKitchenMode) {
     if (window.location.hash === '#kitchen') {
       closeKitchenSubPage(false);
+    } else if (window.location.hash.startsWith('#kitchen-menu-')) {
+      const menuKey = window.location.hash.replace('#kitchen-menu-', '');
+      openKitchenMenuSection(menuKey, false);
     } else if (window.location.hash !== '#kitchen-customers' && window.location.hash !== '#kitchen-payments' && window.location.hash !== '#kitchen-orders') {
       exitKitchenMode(false);
     }
