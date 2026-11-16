@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=75.1">
+  <link rel="manifest" href="/manifest.json?v=75.2">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -579,6 +579,11 @@
       cursor: pointer;
     }
 
+    .dish-info {
+      flex: 1;
+      padding-right: 10px;
+    }
+
     .dish-info h4 {
       font-size: 1rem;
       margin-bottom: 4px;
@@ -588,6 +593,13 @@
       color: var(--primary-color);
       font-weight: 600;
       font-size: 0.95rem;
+    }
+
+    .weight-subtotal-tag {
+      margin-top: 3px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #2E7D32;
     }
 
     .btn-oos {
@@ -655,6 +667,71 @@
       text-align: center;
       font-weight: 600;
       font-size: 0.9rem;
+    }
+
+    /* WEIGHT STEPPER (+ AND - OUTSIDE, DROPDOWN WITH DOWN ARROW INSIDE) */
+    .weight-stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .weight-step-btn {
+      width: 30px;
+      height: 32px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-light);
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .weight-step-btn:active {
+      background: #EAEAEA;
+    }
+
+    .weight-dropdown-box {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      height: 32px;
+    }
+
+    .weight-dropdown-box select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      border: none;
+      background: transparent;
+      padding: 0 22px 0 8px;
+      height: 100%;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      outline: none;
+      cursor: pointer;
+      min-width: 72px;
+      text-align: center;
+    }
+
+    .weight-dropdown-arrow {
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.62rem;
+      color: var(--primary-color);
+      pointer-events: none;
     }
 
     .customer-order-card {
@@ -1140,7 +1217,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v75.1-Beta</span>
+          <span id="kitchen-version-badge">v75.2-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1367,7 +1444,7 @@
         <select id="add-item-category-select" onchange="handleCategorySelectChange()"></select>
         <input type="text" id="add-item-category-new" style="margin-top: 8px; display: none;" placeholder="Enter new category name">
         
-        <span class="form-label" style="margin-top: 8px;">Price (₹):</span>
+        <span class="form-label" id="add-item-price-label" style="margin-top: 8px;">Price (₹):</span>
         <input type="number" id="add-item-price" placeholder="e.g. 120" min="1">
       </div>
 
@@ -1388,7 +1465,7 @@
         <span class="form-label">Dish Name:</span>
         <input type="text" id="edit-item-name">
         
-        <span class="form-label" style="margin-top: 8px;">Price (₹):</span>
+        <span class="form-label" id="edit-item-price-label" style="margin-top: 8px;">Price (₹):</span>
         <input type="number" id="edit-item-price" min="1">
       </div>
 
@@ -1481,6 +1558,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=75.1"></script>
+  <script src="/app.js?v=75.2"></script>
 </body>
 </html>
