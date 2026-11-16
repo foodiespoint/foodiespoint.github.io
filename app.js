@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75.2 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75.3 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v75.2";
+const CURRENT_APP_VERSION = "v75.3";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -97,15 +97,21 @@ const MENU_CONFIGS = {
   }
 };
 
-// Weight increments from 100gm up to 1kg (1000gm) in steps of 50gm
-const WEIGHT_STEPS_GRAMS = [
+// Dropdown options: 100gm up to 1kg (1000gm) in increments of 50gm
+const DROPDOWN_WEIGHT_STEPS_GRAMS = [
   100, 150, 200, 250, 300, 350, 400, 450, 500,
   550, 600, 650, 700, 750, 800, 850, 900, 950, 1000
 ];
 
+// Stepper (+/-) maximum limit: 2.5kg (2500gm)
+const MAX_STEPPER_WEIGHT_GRAMS = 2500;
+
 function formatWeightLabel(grams) {
   if (!grams || grams <= 0) return '0';
-  return grams >= 1000 ? '1kg' : `${grams}gm`;
+  if (grams >= 1000) {
+    return `${Number((grams / 1000).toFixed(2))}kg`;
+  }
+  return `${grams}gm`;
 }
 
 function calculateWeightPrice(perKgPrice, grams) {
@@ -1307,11 +1313,14 @@ function clearDailyMenu() {
 // ==========================================================================
 function buildWeightDropdownOptionsHtml(selectedGrams) {
   let html = `<option value="0"${selectedGrams === 0 ? ' selected' : ''}>0</option>`;
-  WEIGHT_STEPS_GRAMS.forEach((g) => {
+  DROPDOWN_WEIGHT_STEPS_GRAMS.forEach((g) => {
     const label = formatWeightLabel(g);
     const sel = (selectedGrams === g) ? ' selected' : '';
     html += `<option value="${g}"${sel}>${label}</option>`;
   });
+  if (selectedGrams > 1000) {
+    html += `<option value="${selectedGrams}" hidden disabled selected>${formatWeightLabel(selectedGrams)}</option>`;
+  }
   return html;
 }
 
@@ -1319,6 +1328,7 @@ function updateWeightStepperUI(dishId, perKgPrice) {
   const grams = cart[dishId] || 0;
   const selectEl = document.getElementById(`weight-select-${dishId}`);
   if (selectEl) {
+    selectEl.innerHTML = buildWeightDropdownOptionsHtml(grams);
     selectEl.value = String(grams);
   }
   const subEl = document.getElementById(`weight-subtotal-${dishId}`);
@@ -1341,11 +1351,11 @@ function updateWeightQuantity(dishId, deltaGrams, perKgPrice) {
   if (deltaGrams > 0) {
     if (currentGrams === 0) {
       newGrams = 100;
-    } else if (currentGrams >= 1000) {
-      alert("Quantity cap reached: Maximum 1kg per item.");
-      newGrams = 1000;
+    } else if (currentGrams >= MAX_STEPPER_WEIGHT_GRAMS) {
+      alert("Quantity cap reached: Maximum 2.5kg per item.");
+      newGrams = MAX_STEPPER_WEIGHT_GRAMS;
     } else {
-      newGrams = Math.min(1000, currentGrams + 50);
+      newGrams = Math.min(MAX_STEPPER_WEIGHT_GRAMS, currentGrams + 50);
     }
   } else if (deltaGrams < 0) {
     if (currentGrams <= 100) {
@@ -1361,7 +1371,7 @@ function updateWeightQuantity(dishId, deltaGrams, perKgPrice) {
 
 function setWeightQuantity(dishId, gramsVal, perKgPrice) {
   const parsed = parseInt(gramsVal, 10) || 0;
-  cart[dishId] = parsed;
+  cart[dishId] = Math.min(MAX_STEPPER_WEIGHT_GRAMS, Math.max(0, parsed));
   updateWeightStepperUI(dishId, perKgPrice);
 }
 
