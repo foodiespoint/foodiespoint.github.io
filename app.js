@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75.1 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75.2 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v75.1";
+const CURRENT_APP_VERSION = "v75.2";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -81,7 +81,8 @@ const MENU_CONFIGS = {
     dbPath: 'beta_menus/preserved',
     catalogPath: 'beta_section_catalogs/preserved',
     cardId: 'dash-card-preserved',
-    badgeId: 'dash-badge-preserved'
+    badgeId: 'dash-badge-preserved',
+    isWeightBased: true
   },
   bakery: {
     key: 'bakery',
@@ -95,6 +96,22 @@ const MENU_CONFIGS = {
     badgeId: 'dash-badge-bakery'
   }
 };
+
+// Weight increments from 100gm up to 1kg (1000gm) in steps of 50gm
+const WEIGHT_STEPS_GRAMS = [
+  100, 150, 200, 250, 300, 350, 400, 450, 500,
+  550, 600, 650, 700, 750, 800, 850, 900, 950, 1000
+];
+
+function formatWeightLabel(grams) {
+  if (!grams || grams <= 0) return '0';
+  return grams >= 1000 ? '1kg' : `${grams}gm`;
+}
+
+function calculateWeightPrice(perKgPrice, grams) {
+  if (!grams || grams <= 0) return 0;
+  return Number(((perKgPrice * grams) / 1000).toFixed(2));
+}
 
 let activeCustomerMenuKey = 'daily';
 let activeKitchenMenuKey = 'daily';
@@ -925,9 +942,16 @@ function openAddItemModal() {
   const select = document.getElementById('add-item-category-select');
   const newCatInput = document.getElementById('add-item-category-new');
   const catLabel = document.getElementById('add-item-category-label');
+  const priceLabel = document.getElementById('add-item-price-label');
   
   select.innerHTML = '';
   newCatInput.value = '';
+
+  if (priceLabel) {
+    priceLabel.textContent = (MENU_CONFIGS[activeKitchenMenuKey]?.isWeightBased)
+      ? 'Price per kg (₹):'
+      : 'Price (₹):';
+  }
 
   if (activeKitchenMenuKey === 'daily') {
     if (catLabel) catLabel.textContent = 'Category:';
@@ -1017,6 +1041,12 @@ function openEditItemModal(id) {
   const catalog = getCatalogForMenu(activeKitchenMenuKey);
   const item = catalog.find(i => i.id === id);
   if (!item) return;
+  const priceLabel = document.getElementById('edit-item-price-label');
+  if (priceLabel) {
+    priceLabel.textContent = (MENU_CONFIGS[activeKitchenMenuKey]?.isWeightBased)
+      ? 'Price per kg (₹):'
+      : 'Price (₹):';
+  }
   document.getElementById('edit-item-id').value = item.id;
   document.getElementById('edit-item-name').value = item.name;
   document.getElementById('edit-item-price').value = item.price;
@@ -1102,6 +1132,7 @@ function renderKitchenMenu() {
   container.innerHTML = '';
 
   const currentCatalog = getCatalogForMenu(activeKitchenMenuKey);
+  const priceSuffix = (MENU_CONFIGS[activeKitchenMenuKey]?.isWeightBased) ? '/kg' : '';
 
   if (searchBarContainer) {
     if (activeKitchenMenuKey !== 'daily' && currentCatalog.length === 0) {
@@ -1144,7 +1175,7 @@ function renderKitchenMenu() {
         <input type="checkbox" class="dish-checkbox" id="chk-top-${dish.id}" checked onchange="toggleKitchenItem('${dish.id}', false)">
         <div class="dish-info">
           <h4>${dish.name}${catLabelHtml}</h4>
-          <div class="price">₹${dish.price}</div>
+          <div class="price">₹${dish.price}${priceSuffix}</div>
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
@@ -1167,7 +1198,7 @@ function renderKitchenMenu() {
         <input type="checkbox" class="dish-checkbox" id="chk-${dish.id}" onchange="toggleKitchenItem('${dish.id}', true)">
         <div class="dish-info">
           <h4>${dish.name}</h4>
-          <div class="price">₹${dish.price}</div>
+          <div class="price">₹${dish.price}${priceSuffix}</div>
         </div>
       </div>
       <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
@@ -1195,7 +1226,7 @@ function renderKitchenMenu() {
             <input type="checkbox" class="dish-checkbox" id="chk-${dish.id}" onchange="toggleKitchenItem('${dish.id}', true)">
             <div class="dish-info">
               <h4>${dish.name}</h4>
-              <div class="price">₹${dish.price}</div>
+              <div class="price">₹${dish.price}${priceSuffix}</div>
             </div>
           </div>
           <button type="button" class="btn-edit-item" onclick="openEditItemModal('${dish.id}')">✏ Edit</button>
@@ -1272,8 +1303,68 @@ function clearDailyMenu() {
 }
 
 // ==========================================================================
-// 12. CUSTOMER LIVE MENU LISTENER (ALL 5 MENUS)
+// 12. CUSTOMER LIVE MENU LISTENER (ALL 5 MENUS + WEIGHT DROPDOWN STEPPER)
 // ==========================================================================
+function buildWeightDropdownOptionsHtml(selectedGrams) {
+  let html = `<option value="0"${selectedGrams === 0 ? ' selected' : ''}>0</option>`;
+  WEIGHT_STEPS_GRAMS.forEach((g) => {
+    const label = formatWeightLabel(g);
+    const sel = (selectedGrams === g) ? ' selected' : '';
+    html += `<option value="${g}"${sel}>${label}</option>`;
+  });
+  return html;
+}
+
+function updateWeightStepperUI(dishId, perKgPrice) {
+  const grams = cart[dishId] || 0;
+  const selectEl = document.getElementById(`weight-select-${dishId}`);
+  if (selectEl) {
+    selectEl.value = String(grams);
+  }
+  const subEl = document.getElementById(`weight-subtotal-${dishId}`);
+  if (subEl) {
+    if (grams > 0) {
+      const subtotal = calculateWeightPrice(perKgPrice, grams);
+      subEl.textContent = `${formatWeightLabel(grams)} = ₹${subtotal}`;
+      subEl.style.display = 'block';
+    } else {
+      subEl.textContent = '';
+      subEl.style.display = 'none';
+    }
+  }
+}
+
+function updateWeightQuantity(dishId, deltaGrams, perKgPrice) {
+  const currentGrams = cart[dishId] || 0;
+  let newGrams = currentGrams;
+
+  if (deltaGrams > 0) {
+    if (currentGrams === 0) {
+      newGrams = 100;
+    } else if (currentGrams >= 1000) {
+      alert("Quantity cap reached: Maximum 1kg per item.");
+      newGrams = 1000;
+    } else {
+      newGrams = Math.min(1000, currentGrams + 50);
+    }
+  } else if (deltaGrams < 0) {
+    if (currentGrams <= 100) {
+      newGrams = 0;
+    } else {
+      newGrams = Math.max(0, currentGrams - 50);
+    }
+  }
+
+  cart[dishId] = newGrams;
+  updateWeightStepperUI(dishId, perKgPrice);
+}
+
+function setWeightQuantity(dishId, gramsVal, perKgPrice) {
+  const parsed = parseInt(gramsVal, 10) || 0;
+  cart[dishId] = parsed;
+  updateWeightStepperUI(dishId, perKgPrice);
+}
+
 function renderCustomerMenuFromSnapshot(activeIds) {
   const container = document.getElementById('customer-menu-container');
   const placeOrderBtn = document.getElementById('btn-place-order');
@@ -1299,8 +1390,10 @@ function renderCustomerMenuFromSnapshot(activeIds) {
 
   if (placeOrderBtn) placeOrderBtn.disabled = false;
 
+  const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
+  const isWeightMenu = !!cfg.isWeightBased;
+
   if (!activeIds || Object.keys(activeIds).length === 0) {
-    const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
     container.innerHTML = `<p style="text-align:center; padding: 40px 20px; color:#666;">The kitchen is preparing ${cfg.label}. Please check back shortly!</p>`;
     return;
   }
@@ -1318,18 +1411,47 @@ function renderCustomerMenuFromSnapshot(activeIds) {
       card.className = 'menu-card';
       card.setAttribute('data-item-id', dish.id);
 
-      const actionAreaHtml = isOOS
-        ? `<span class="badge-oos">Out of Stock</span>`
-        : `<div class="quantity-stepper">
-             <button type="button" aria-label="Decrease quantity" onclick="updateQuantity('${dish.id}', -1)">−</button>
-             <span id="qty-${dish.id}">${cart[dish.id]}</span>
-             <button type="button" aria-label="Increase quantity" onclick="updateQuantity('${dish.id}', 1)">+</button>
-           </div>`;
+      let actionAreaHtml = '';
+      let priceLineHtml = `<div class="price">₹${dish.price}</div>`;
+
+      if (isWeightMenu) {
+        const selectedGrams = cart[dish.id] || 0;
+        const subtotal = calculateWeightPrice(dish.price, selectedGrams);
+        const subtotalVisible = selectedGrams > 0;
+
+        priceLineHtml = `
+          <div class="price">₹${dish.price}/kg</div>
+          <div id="weight-subtotal-${dish.id}" class="weight-subtotal-tag" style="display:${subtotalVisible ? 'block' : 'none'};">
+            ${subtotalVisible ? `${formatWeightLabel(selectedGrams)} = ₹${subtotal}` : ''}
+          </div>
+        `;
+
+        actionAreaHtml = isOOS
+          ? `<span class="badge-oos">Out of Stock</span>`
+          : `<div class="weight-stepper">
+               <button type="button" class="weight-step-btn" aria-label="Decrease weight" onclick="updateWeightQuantity('${dish.id}', -50, ${dish.price})">−</button>
+               <div class="weight-dropdown-box">
+                 <select id="weight-select-${dish.id}" aria-label="Select weight" onchange="setWeightQuantity('${dish.id}', this.value, ${dish.price})">
+                   ${buildWeightDropdownOptionsHtml(selectedGrams)}
+                 </select>
+                 <span class="weight-dropdown-arrow">▼</span>
+               </div>
+               <button type="button" class="weight-step-btn" aria-label="Increase weight" onclick="updateWeightQuantity('${dish.id}', 50, ${dish.price})">+</button>
+             </div>`;
+      } else {
+        actionAreaHtml = isOOS
+          ? `<span class="badge-oos">Out of Stock</span>`
+          : `<div class="quantity-stepper">
+               <button type="button" aria-label="Decrease quantity" onclick="updateQuantity('${dish.id}', -1)">−</button>
+               <span id="qty-${dish.id}">${cart[dish.id]}</span>
+               <button type="button" aria-label="Increase quantity" onclick="updateQuantity('${dish.id}', 1)">+</button>
+             </div>`;
+      }
 
       card.innerHTML = `
         <div class="dish-info" style="${isOOS ? 'opacity: 0.5;' : ''}">
           <h4>${dish.name}</h4>
-          <div class="price">₹${dish.price}</div>
+          ${priceLineHtml}
         </div>
         ${actionAreaHtml}
       `;
@@ -1384,17 +1506,35 @@ function openOrderOptionsModal() {
     return;
   }
 
+  const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
+  const isWeightMenu = !!cfg.isWeightBased;
   const currentCatalog = getCatalogForMenu(activeCustomerMenuKey);
   const orderItems = [];
   let totalAmount = 0;
 
   currentCatalog.forEach((dish) => {
-    const qty = cart[dish.id] || 0;
-    if (qty > 0) {
-      orderItems.push({ id: dish.id, name: dish.name, price: dish.price, quantity: qty });
-      totalAmount += dish.price * qty;
+    const val = cart[dish.id] || 0;
+    if (val > 0) {
+      if (isWeightMenu) {
+        const weightLabel = formatWeightLabel(val);
+        const itemPrice = calculateWeightPrice(dish.price, val);
+        orderItems.push({
+          id: dish.id,
+          name: `${dish.name} (${weightLabel})`,
+          price: itemPrice,
+          quantity: 1,
+          weightGrams: val,
+          unitLabel: weightLabel
+        });
+        totalAmount += itemPrice;
+      } else {
+        orderItems.push({ id: dish.id, name: dish.name, price: dish.price, quantity: val });
+        totalAmount += dish.price * val;
+      }
     }
   });
+
+  totalAmount = Number(totalAmount.toFixed(2));
 
   if (orderItems.length === 0) {
     alert("Please add at least one item to your order.");
@@ -1406,8 +1546,6 @@ function openOrderOptionsModal() {
     checkAppOnboarding(); 
     return;
   }
-
-  const cfg = MENU_CONFIGS[activeCustomerMenuKey] || MENU_CONFIGS.daily;
 
   pendingCustomerOrder = {
     items: orderItems,
@@ -1503,10 +1641,11 @@ function executeFirebaseOrderSubmission(orderItems, totalAmount, customerProfile
       renderCustomerOrderHistory();
 
       const currentCatalog = getCatalogForMenu(resolvedMenuKey);
-      currentCatalog.forEach((dish) => { cart[dish.id] = 0; });
-      Object.keys(cart).forEach(id => {
-        const span = document.getElementById(`qty-${id}`);
+      currentCatalog.forEach((dish) => {
+        cart[dish.id] = 0;
+        const span = document.getElementById(`qty-${dish.id}`);
         if (span) span.textContent = 0;
+        updateWeightStepperUI(dish.id, dish.price);
       });
       document.getElementById('order-time-input').value = "";
     })
