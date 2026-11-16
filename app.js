@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v73 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v74 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v73";
+const CURRENT_APP_VERSION = "v74";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -949,7 +949,6 @@ function openAddItemModal() {
     addOpt.textContent = '➕ Add New Category...';
     select.appendChild(addOpt);
   } else {
-    // Non-daily sections: ONLY show the optional Add New Category input
     if (catLabel) catLabel.textContent = 'Add New Category (Optional):';
     select.style.display = 'none';
     newCatInput.style.display = 'block';
@@ -1104,7 +1103,6 @@ function renderKitchenMenu() {
 
   const currentCatalog = getCatalogForMenu(activeKitchenMenuKey);
 
-  // For non-daily sections, keep the view completely clean (only Clear, + Add Item, Publish buttons) when empty
   if (searchBarContainer) {
     if (activeKitchenMenuKey !== 'daily' && currentCatalog.length === 0) {
       searchBarContainer.style.display = 'none';
@@ -1158,7 +1156,6 @@ function renderKitchenMenu() {
     container.appendChild(card);
   });
 
-  // Render uncategorized unchecked items first (for items added with an empty category)
   const uncategorizedUnchecked = filteredItems.filter(item => !item.category && !kitchenCheckedState[item.id]);
   uncategorizedUnchecked.forEach((dish) => {
     const card = document.createElement('div');
@@ -1766,12 +1763,14 @@ function exitKitchenMode(triggerHistoryBack = true) {
 function openKitchenOrdersPage() {
   toggleAppDropdown(false);
   resetKitchenSearchState();
+  expandedKitchenOrderSections = {};
   history.pushState({ kitchenSubPage: 'orders' }, '', '#kitchen-orders');
   document.getElementById('kitchen-dashboard-view').style.display = 'none';
   document.getElementById('kitchen-view').style.display = 'none';
   document.getElementById('customer-data-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'flex';
+  renderKitchenOrdersAccordion();
 }
 
 function openCustomerDataPage() {
@@ -1800,6 +1799,7 @@ function openPaymentDetailsPage() {
 
 function closeKitchenSubPage(triggerBack = true) {
   resetKitchenSearchState();
+  expandedKitchenOrderSections = {};
   document.getElementById('customer-data-view').style.display = 'none';
   document.getElementById('payment-details-view').style.display = 'none';
   document.getElementById('kitchen-orders-view').style.display = 'none';
@@ -1945,126 +1945,156 @@ window.addEventListener('popstate', (e) => {
 });
 
 // ==========================================================================
-// 16. LIVE KITCHEN ORDER LISTENER (GROUPED BY ACTIVE MENU SECTIONS)
+// 16. LIVE KITCHEN ORDER LISTENER (CLOSED DROPDOWNS BY DEFAULT + BADGE)
 // ==========================================================================
+let expandedKitchenOrderSections = {};
+let latestKitchenOrdersSnapshot = null;
+
+function toggleKitchenOrderSection(menuKey) {
+  expandedKitchenOrderSections[menuKey] = !expandedKitchenOrderSections[menuKey];
+  renderKitchenOrdersAccordion();
+}
+
+function renderKitchenOrdersAccordion() {
+  const ordersContainer = document.getElementById('kitchen-orders-container');
+  if (!ordersContainer) return;
+  ordersContainer.innerHTML = '';
+
+  const orders = latestKitchenOrdersSnapshot;
+  if (!orders) {
+    ordersContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No active incoming orders.</p>`;
+    return;
+  }
+
+  const ordersArray = Object.keys(orders).map(key => ({
+    firebaseKey: key,
+    ...orders[key]
+  })).filter(order => !order.archived);
+
+  if (ordersArray.length === 0) {
+    ordersContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No active incoming orders.</p>`;
+    return;
+  }
+
+  ordersArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  const groupedBySection = {};
+  ordersArray.forEach((order) => {
+    const mKey = (order.menuKey && MENU_CONFIGS[order.menuKey]) ? order.menuKey : 'daily';
+    if (!groupedBySection[mKey]) groupedBySection[mKey] = [];
+    groupedBySection[mKey].push(order);
+  });
+
+  Object.keys(MENU_CONFIGS).forEach((menuKey) => {
+    const sectionOrders = groupedBySection[menuKey];
+    if (!sectionOrders || sectionOrders.length === 0) return;
+
+    const cfg = MENU_CONFIGS[menuKey];
+    const unattendedCount = sectionOrders.filter(o => o.status === 'PENDING').length;
+    const isExpanded = !!expandedKitchenOrderSections[menuKey];
+
+    const sectionBlock = document.createElement('div');
+    sectionBlock.className = 'orders-dropdown-section';
+
+    const headerBtn = document.createElement('button');
+    headerBtn.type = 'button';
+    headerBtn.className = `orders-dropdown-header${isExpanded ? ' is-open' : ''}`;
+    headerBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    headerBtn.onclick = () => toggleKitchenOrderSection(menuKey);
+
+    const badgeHtml = unattendedCount > 0
+      ? `<span class="unattended-orders-badge">${unattendedCount}</span>`
+      : '';
+
+    headerBtn.innerHTML = `
+      <span class="orders-dropdown-title">${cfg.icon} ${cfg.label}</span>
+      <span class="orders-dropdown-right">
+        ${badgeHtml}
+        <span class="orders-dropdown-chevron">${isExpanded ? '▲' : '▼'}</span>
+      </span>
+    `;
+    sectionBlock.appendChild(headerBtn);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'orders-dropdown-body';
+    bodyEl.style.display = isExpanded ? 'block' : 'none';
+
+    sectionOrders.forEach((order) => {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      
+      const itemsListHtml = order.items
+        .map(i => `<p style="margin: 4px 0;"><strong>${i.quantity}x</strong> ${i.name}</p>`)
+        .join('');
+
+      const statusColors = {
+        PENDING: '#EF6C00',
+        ACCEPTED: '#2E7D32',
+        REJECTED: '#C62828'
+      };
+      const statusColor = statusColors[order.status] || '#D9534F';
+
+      const typeEmoji = order.orderType === 'Delivery' ? '🚚' : '🥡';
+      const orderTypeHtml = `
+        <div style="font-weight: 700; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.9rem;">
+          ${typeEmoji} ${order.orderType} @ ${order.scheduledTime || 'N/A'}
+        </div>
+      `;
+
+      let actionButtonsHtml = '';
+      if (order.status === 'PENDING') {
+        actionButtonsHtml = `
+          <button class="btn-action btn-accept" onclick="acceptOrderTrigger('${order.firebaseKey}', '${order.orderType}', ${order.total})">Accept</button>
+          <button class="btn-action btn-deny" onclick="rejectOrder('${order.firebaseKey}')">Reject</button>
+        `;
+      } else {
+        actionButtonsHtml = `
+          <button class="btn-action" style="background: #EAEAEA; color: #555;" onclick="removeTicket('${order.firebaseKey}')">Remove Ticket</button>
+        `;
+      }
+
+      const dateStr = new Date(order.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      
+      let totalDisplay = `₹${order.total}`;
+      if (order.deliveryCharge > 0) {
+        totalDisplay += ` <span style="font-size:0.8rem; font-weight:normal; color:#666;">(Includes ₹${order.deliveryCharge} fee)</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="order-header">
+          <div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
+            <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
+              👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
+            </div>
+          </div>
+          <span style="color: ${statusColor}; font-weight: 700;">${order.status}</span>
+        </div>
+        ${orderTypeHtml}
+        <div class="order-body" style="margin: 6px 0 12px 0;">
+          ${itemsListHtml}
+          <p style="margin-top: 8px; font-weight: bold;">Total: ${totalDisplay}</p>
+        </div>
+        <div class="order-actions">
+          ${actionButtonsHtml}
+        </div>
+      `;
+
+      bodyEl.appendChild(card);
+    });
+
+    sectionBlock.appendChild(bodyEl);
+    ordersContainer.appendChild(sectionBlock);
+  });
+}
+
 function listenForKitchenOrders() {
   if (!db) return;
-  const ordersContainer = document.getElementById('kitchen-orders-container');
   
   db.ref('beta_orders').on('value', (snapshot) => {
-    if (!ordersContainer) return;
-    ordersContainer.innerHTML = '';
-
-    const orders = snapshot.val();
-    if (!orders) {
-      ordersContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No active incoming orders.</p>`;
-      return;
-    }
-
-    const ordersArray = Object.keys(orders).map(key => ({
-      firebaseKey: key,
-      ...orders[key]
-    })).filter(order => !order.archived);
-
-    if (ordersArray.length === 0) {
-      ordersContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No active incoming orders.</p>`;
-      return;
-    }
-
-    ordersArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-    // Group active orders by their respective menu section
-    const groupedBySection = {};
-    ordersArray.forEach((order) => {
-      const mKey = (order.menuKey && MENU_CONFIGS[order.menuKey]) ? order.menuKey : 'daily';
-      if (!groupedBySection[mKey]) groupedBySection[mKey] = [];
-      groupedBySection[mKey].push(order);
-    });
-
-    // Only render sections that actually have incoming orders
-    Object.keys(MENU_CONFIGS).forEach((menuKey) => {
-      const sectionOrders = groupedBySection[menuKey];
-      if (!sectionOrders || sectionOrders.length === 0) return;
-
-      const cfg = MENU_CONFIGS[menuKey];
-      const sectionBlock = document.createElement('div');
-      sectionBlock.style.cssText = 'margin-bottom: 22px;';
-
-      const sectionHeader = document.createElement('div');
-      sectionHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-bottom: 10px; background: var(--white); border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 1px 4px rgba(0,0,0,0.04);';
-      sectionHeader.innerHTML = `
-        <span style="font-size: 1rem; font-weight: 800; color: var(--text-dark);">${cfg.icon} ${cfg.label}</span>
-        <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-color); background: #FFEBEE; padding: 3px 9px; border-radius: 12px;">${sectionOrders.length}</span>
-      `;
-      sectionBlock.appendChild(sectionHeader);
-
-      sectionOrders.forEach((order) => {
-        const card = document.createElement('div');
-        card.className = 'order-card';
-        
-        const itemsListHtml = order.items
-          .map(i => `<p style="margin: 4px 0;"><strong>${i.quantity}x</strong> ${i.name}</p>`)
-          .join('');
-
-        const statusColors = {
-          PENDING: '#EF6C00',
-          ACCEPTED: '#2E7D32',
-          REJECTED: '#C62828'
-        };
-        const statusColor = statusColors[order.status] || '#D9534F';
-
-        const typeEmoji = order.orderType === 'Delivery' ? '🚚' : '🥡';
-        const orderTypeHtml = `
-          <div style="font-weight: 700; color: #1565C0; margin: 8px 0; background: #E3F2FD; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.9rem;">
-            ${typeEmoji} ${order.orderType} @ ${order.scheduledTime || 'N/A'}
-          </div>
-        `;
-
-        let actionButtonsHtml = '';
-        if (order.status === 'PENDING') {
-          actionButtonsHtml = `
-            <button class="btn-action btn-accept" onclick="acceptOrderTrigger('${order.firebaseKey}', '${order.orderType}', ${order.total})">Accept</button>
-            <button class="btn-action btn-deny" onclick="rejectOrder('${order.firebaseKey}')">Reject</button>
-          `;
-        } else {
-          actionButtonsHtml = `
-            <button class="btn-action" style="background: #EAEAEA; color: #555;" onclick="removeTicket('${order.firebaseKey}')">Remove Ticket</button>
-          `;
-        }
-
-        const dateStr = new Date(order.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
-        let totalDisplay = `₹${order.total}`;
-        if (order.deliveryCharge > 0) {
-          totalDisplay += ` <span style="font-size:0.8rem; font-weight:normal; color:#666;">(Includes ₹${order.deliveryCharge} fee)</span>`;
-        }
-
-        card.innerHTML = `
-          <div class="order-header">
-            <div>
-              <div style="font-size: 0.95rem; font-weight: 700; color: #2D2D2D;">${dateStr}</div>
-              <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Order ID: #${order.orderId}</div>
-              <div style="font-size: 0.85rem; color: #444; margin-top: 6px; font-weight: 500;">
-                👤 <strong>${order.customerName || 'Guest'}</strong> (${order.customerMobile || 'N/A'})
-              </div>
-            </div>
-            <span style="color: ${statusColor}; font-weight: 700;">${order.status}</span>
-          </div>
-          ${orderTypeHtml}
-          <div class="order-body" style="margin: 6px 0 12px 0;">
-            ${itemsListHtml}
-            <p style="margin-top: 8px; font-weight: bold;">Total: ${totalDisplay}</p>
-          </div>
-          <div class="order-actions">
-            ${actionButtonsHtml}
-          </div>
-        `;
-
-        sectionBlock.appendChild(card);
-      });
-
-      ordersContainer.appendChild(sectionBlock);
-    });
+    latestKitchenOrdersSnapshot = snapshot.val();
+    renderKitchenOrdersAccordion();
   });
 }
 
