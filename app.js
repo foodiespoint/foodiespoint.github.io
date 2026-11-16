@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v74 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v74";
+const CURRENT_APP_VERSION = "v75";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -369,7 +369,7 @@ function initSecretTitleSlider() {
 }
 
 // ==========================================================================
-// 4. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET ENGINE
+// 4. TIME-BOUND OPERATING WINDOW & 6:00 PM AUTOMATIC RESET (DAILY MENU ONLY)
 // ==========================================================================
 function isDuringBreakWindow() {
   const now = new Date();
@@ -383,20 +383,25 @@ function checkDaily6PMReset() {
   const todayStr = now.toDateString();
   const lastResetDate = localStorage.getItem('fp_beta_last_reset_date');
 
+  // Strictly applies ONLY to Daily Live Menu; all other sections remain unaffected
   if (hour >= 18 && hour < 21 && lastResetDate !== todayStr) {
     localStorage.setItem('fp_beta_last_reset_date', todayStr);
+    menuSnapshotsByKey.daily = null;
+
     if (activeKitchenMenuKey === 'daily') {
       kitchenCheckedState = {};
     }
 
     if (db) {
-      db.ref('beta_dailyMenu').remove()
+      db.ref(MENU_CONFIGS.daily.dbPath).remove()
         .then(() => {
-          console.log(`[${CURRENT_APP_VERSION}] 6:00 PM reached: Beta Menu cleared.`);
-          renderKitchenMenu();
+          console.log(`[${CURRENT_APP_VERSION}] 6:00 PM reached: Daily Live Menu cleared.`);
+          if (isKitchenMode && activeKitchenMenuKey === 'daily') {
+            renderKitchenMenu();
+          }
         })
-        .catch((err) => console.error("Error clearing beta menu at 6 PM:", err));
-    } else {
+        .catch((err) => console.error("Error clearing daily menu at 6 PM:", err));
+    } else if (isKitchenMode && activeKitchenMenuKey === 'daily') {
       renderKitchenMenu();
     }
   }
@@ -1281,6 +1286,7 @@ function renderCustomerMenuFromSnapshot(activeIds) {
 
   container.innerHTML = '';
 
+  // 6 PM - 9 PM closing window applies ONLY to Daily Live Menu; all other sections remain open
   if (activeCustomerMenuKey === 'daily' && isDuringBreakWindow()) {
     container.innerHTML = `
       <div style="text-align:center; padding: 40px 20px; color:#555;">
@@ -2204,8 +2210,8 @@ function initFoodiesPoint() {
 
   setInterval(() => {
     checkDaily6PMReset();
-    if (!isKitchenMode && currentAppView === 'live-menu') {
-      renderCustomerMenuFromSnapshot(menuSnapshotsByKey[activeCustomerMenuKey]);
+    if (!isKitchenMode && currentAppView === 'live-menu' && activeCustomerMenuKey === 'daily') {
+      renderCustomerMenuFromSnapshot(menuSnapshotsByKey.daily);
     }
   }, 30000);
 }
