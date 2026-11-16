@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=73">
+  <link rel="manifest" href="/manifest.json?v=74">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -802,8 +802,81 @@
       align-items: center;
     }
 
-    .order-card {
+    /* INCOMING ORDERS SECTION DROPDOWN ACCORDION */
+    .orders-dropdown-section {
+      margin-bottom: 12px;
+      border-radius: 14px;
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+
+    .orders-dropdown-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 16px;
+      background: var(--white);
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .orders-dropdown-header:active {
       background: var(--bg-light);
+    }
+
+    .orders-dropdown-header.is-open {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .orders-dropdown-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      padding-right: 10px;
+    }
+
+    .orders-dropdown-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .unattended-orders-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 7px;
+      border-radius: 12px;
+      background: var(--primary-color);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 800;
+      box-shadow: 0 2px 5px rgba(217, 83, 79, 0.35);
+    }
+
+    .orders-dropdown-chevron {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .orders-dropdown-body {
+      padding: 12px 12px 2px 12px;
+      background: var(--bg-light);
+    }
+
+    .order-card {
+      background: var(--white);
       border-left: 4px solid var(--primary-color);
       border-radius: 8px;
       padding: 14px;
@@ -1075,7 +1148,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v73-Beta</span>
+          <span id="kitchen-version-badge">v74-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1416,6 +1489,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=73"></script>
+  <script src="/app.js?v=74"></script>
 </body>
 </html>
