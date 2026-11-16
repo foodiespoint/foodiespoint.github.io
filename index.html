@@ -10,7 +10,7 @@
 
   <title>Foodies Point Beta</title>
 
-  <link rel="manifest" href="/manifest.json?v=75">
+  <link rel="manifest" href="/manifest.json?v=75.1">
   <meta name="theme-color" content="#D9534F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -109,11 +109,10 @@
       margin: 4px 0 0 0;
     }
 
-    /* LOADING SPINNER BOX - Starts Centered */
+    /* LOADING SPINNER BOX - Static at final top position (25%) */
     .splash-loader-box {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
+      top: 25%;
       left: 0;
       width: 100%;
       display: flex;
@@ -121,17 +120,10 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      transition: top 0s, transform 0s;
     }
 
     #splash-loader-box {
       display: none; 
-    }
-
-    /* Snaps dynamically to 25% from top when ad appears */
-    .splash-loader-box.ad-snapped {
-      top: 25%;
-      transform: none;
     }
 
     .splash-loader {
@@ -1106,7 +1098,7 @@
       </div>
     </div>
 
-    <!-- LOADER BOX: Starts Centered, Snaps to Top 25% -->
+    <!-- LOADER BOX: Static at 25% Top -->
     <div id="splash-loader-box" class="splash-loader-box">
       <span class="splash-loading-text">Connecting to kitchen...</span>
       <div class="splash-loader"></div>
@@ -1148,7 +1140,7 @@
         <!-- DYNAMIC APP TITLE & VERSION BADGE -->
         <div class="app-title" id="main-app-title">
           <span id="main-app-title-text">Foodies Point</span>
-          <span id="kitchen-version-badge">v75-Beta</span>
+          <span id="kitchen-version-badge">v75.1-Beta</span>
         </div>
 
         <div class="header-right-group">
@@ -1489,6 +1481,6 @@
     </div>
   </div>
 
-  <script src="/app.js?v=75"></script>
+  <script src="/app.js?v=75.1"></script>
 </body>
 </html>
