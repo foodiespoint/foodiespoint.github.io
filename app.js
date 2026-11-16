@@ -1,7 +1,7 @@
 // ==========================================================================
-// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75 - BETA ISOLATED)
+// 1. FIREBASE & RENDER VAPID CONFIGURATION (v75.1 - BETA ISOLATED)
 // ==========================================================================
-const CURRENT_APP_VERSION = "v75";
+const CURRENT_APP_VERSION = "v75.1";
 const VAPID_PUBLIC_KEY = "BCYZCGMueIWWUU7cA2m4-fmHK0gEbmwqfSMHyzXr4AGdyhDi53mct0OoEfnPttK-1D3LV8guB3-RtfFYABa82bo";
 const RENDER_BACKEND_URL = "https://foodies-backend-9vvj.onrender.com";
 
@@ -169,10 +169,7 @@ function executeAppLogin() {
 
   if (loginBtn) loginBtn.style.display = 'none';
   if (headerBox) headerBox.style.display = 'none';
-  if (loaderBox) {
-    loaderBox.style.display = 'flex';
-    loaderBox.classList.remove('ad-snapped');
-  }
+  if (loaderBox) loaderBox.style.display = 'flex';
 
   if (splash) {
     splash.style.setProperty('background', '#FFFFFF', 'important');
@@ -253,8 +250,6 @@ function executeAppLogin() {
     checkNodes(document.documentElement);
 
     if (adDetected) {
-      if (loaderBox) loaderBox.classList.add('ad-snapped');
-      
       clearInterval(trackerInterval);
       setTimeout(enterApp, 3500);
     }
